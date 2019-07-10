@@ -12,7 +12,7 @@ Even though _Rust_ is a _low level language_ it has a wide range of applicabilit
 The standard way to install _Rust_ is using the `rustup` tool, which is an _installer_, and _version management_ tool for _Rust_.
 
 On _Linux_ and _Mac_ we can install it from the terminal using - 
-```bash
+```console
 $ curl https://sh.rustup.rs -sSf | sh
 ```
 This downloads the script file and executes it in the shell. This bootstraps the installation tool and installs the necessary components.
@@ -53,11 +53,11 @@ fn main(){
 }
 ```
 Now we can compile it using -
-```bash
+```console
 $ rustc hello.rs
 ```
 This should produce and executable file that we can run directly from the terminal -
-```bash
+```console
 $ ./hello
 Hello World!
 ```
@@ -72,4 +72,89 @@ The `main` function is a special function as it is the _Entry Point_ to the prog
 All the work in our code is done by `println!`, which looks like a _function_ but is really a _macro_ (as indicated by the **!** suffix). We shall learn about _macros_ later but in simple words it is a line of code that is expanded in-place by the compiler with the code that does the actual lifting. So it is not a _sub-routine_ call to another _stack_ like a _function_. We will encounter this and more _macros_ as we go further.
 
 ## Hello Cargo
-Now
+Whilst compiling with `rustc` is fine for small code bases, for real-world projects we would want to create and manage the project with the `cargo` tool.  
+It is the _build system_ and _package manager_ for _Rust_ (create the project structure and manifest, manage dependencies and configure build flows). It is like `npm` for `Node.js`.
+
+### Create a project with `cargo`
+We shall create a project named `hello_cargo`. To do that go to our working directory and use `cargo` to create a new project -
+```console
+$ cargo new hello_cargo
+     Created binary (application) `hello_cargo` package
+```
+This should create a new directory named `hello_cargo` with the follwing contents -
+```console
+./hello_cargo
+    |_Cargo.toml
+    |_/src
+        |_main.rs
+```
+_It also creates a `git` repository with a `.gitignore` file if the parent directory does not already have one. It is possible to control the repository using the `--VCS <VCS>` switch. We can even specify (none)._
+
+The tool has created a `Cargo.toml` file and a `src` directory with a `main.rs` source file.
+
+- #### "Cargo.toml"
+This is essntially the project manifest with configuration information about the project and its dependencies, like `package.json` in _NPM_. Unlike _NPM_ though _Cargo_ uses the `TOML` (Tom's Obvious, Minimal Language - By Tom Preston-Werner) syntax instead of `JSON`. This kind of resmbles `INI` files from back in the days, and is essentially a structured list of Key-Value pairs. Our `toml` file would look like - 
+```toml
+[package]
+name = "hello_cargo"
+version = "0.1.0"
+authors = ["<name>"]
+edition = "2018"
+
+[dependencies]
+```
+At this stage we do not have any dependencies, so that would be empty.
+
+- #### "src" (directory)
+Inside the `src` directory `cargo` would have created a `main.rs` file with a simple program to print _"Hello, world!"_ (exactly like what we wrote in the previous section).  
+
+`cargo` expects all source code to exist within the `src` directory. The top-level project directory is for configuration, license and readme etc.
+
+If we started a project without `cargo` all we have to do to convert it is to copy all the source code to and `src` sub-directory and create a `Cargo.toml` file at the top-level.
+
+### Build with `cargo`
+With the project and code in place we can use `cargo` to build it for us by using the `build` command from the project directory -
+```console
+$ cargo build
+   Compiling hello_cargo v0.1.0 (<working directory>\hello_cargo)
+    Finished dev [unoptimized + debuginfo] target(s) in 4.30s
+```
+This will create an executable in a `./target/debug` directory. It will also create other files such as `.pdb` for debug etc. We can run our executable from the terminal -
+```console
+$ ./target/debug/hello_cargo
+Hello, world!
+```
+
+By default it `cargo` will build for _debug_ mode, which means it has debug symbol files and is not optimized. When the project is ready for **release** we can build with the `--release` switch/option and this will do an optimized build for release environments. The comiplation/build time for **release** mode takes longer but the binary is optmized to execute faster. The **release** build would end up in the `./target/release` directory.
+
+### Run with `cargo`
+We can _build_ and _run_ the project in a single command using `run` -
+```console
+$ cargo run
+   Compiling hello_cargo v0.1.0 (<working directory>\hello_cargo)
+    Finished dev [unoptimized + debuginfo] target(s) in 1.36s
+     Running `target\debug\hello_cargo.exe`
+Hello, world!
+```
+We can see the code built, and the output from the executed binary.
+
+### Check with `cargo`
+`cargo` provides a way to **check** if everything is alright woith our code and is good enough for _build_, without _actually creating executables_. To do this use the `check` command -
+```console
+$ cargo check
+    Checking hello_cargo v0.1.0 (<working directory>\hello_cargo)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.41s
+```
+This does everything needed to build without actually creating the executable file, and since there is no I/O it is significantly faster. It is common practice to periodically doing a `cargo check` as we progress with coding to ensure that everything is in a _build ready_ state. 
+
+## Basic Programming Elements
+xx
+### Comments
+
+### Variables
+
+### Basic Types
+
+### Functions
+
+### Control Flow

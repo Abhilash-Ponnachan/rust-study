@@ -148,10 +148,63 @@ $ cargo check
 This does everything needed to build without actually creating the executable file, and since there is no I/O it is significantly faster. It is common practice to periodically doing a `cargo check` as we progress with coding to ensure that everything is in a _build ready_ state. 
 
 ## Basic Programming Elements
-xx
+In this section we shall cover the basic programming constructs in _Rust_ that allow us to declare variable, assign values, basic data types, create functions etc.  These are the building blocks of most programming languages, and here we shall see how they are expressed in _Rust_. 
+
 ### Comments
+_Rust_ has the same syntax as _C/C++_ for basic comments - 
+- Line comments - start with `//`
+- Block comments - enclose in `/* .. */`  
+    - However as a convention, the _Rust community_ seems to encourage using line comments (`//`) for multi-line comments (like using `#` on comment line in _Python_).
+- Documentation comments - start with `///`
+    - This is used to create HTML documentation from the code using the `rustdoc` tool OR `cargo doc` command if it is a crate (the latter just runs `rustdoc` behind the scene). 
+    - Documentation comments support _Markdown_ notation for formatting.
+
+    ```rust
+    // This is a single line comment
+    // This is another single line comment
+
+    /* This is a block
+    - comment */
+
+    /// ## Documentation Comments
+    /// **This should generate some documentation**
+    /// It supports _Markdown_ notation
+    ```
+    Executing the documentation tool generates HTMl documentation in the `/doc` directory.
 
 ### Variables
+- #### immutable variables
+Since _Rust_ is designed with concurrency in mind so variables are immutable by defualt. We can declare a variable using the `let` keyword.
+```rust
+let x = 23;
+```
+Now the _name_ `x` is bound to the _value_ `23`. If we try to change this the compiler will throw an error -
+```
+let x = 23;
+x = 45; // this will fail at compile time
+```
+->
+```console
+error[E0384]: cannot assign twice to immutable variable `x`
+ --> variables.rs:8:5
+  |
+7 |     let x = 22;
+  |         - first assignment to `x`
+8 |     x = 45;
+  |     ^^^^^^ cannot assign twice to immutable variable
+```
+- #### mutable variables
+We can explicitly declare variables to be mutable when the need arises using the `let mut` syntax.
+```rust
+let mut x = 21;
+x += 2; // increments x to 23
+```
+
+- #### constants
+We 
+
+- #### shadowing
+We 
 
 ### Basic Types
 

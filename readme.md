@@ -173,40 +173,81 @@ _Rust_ has the same syntax as _C/C++_ for basic comments -
     Executing the documentation tool generates HTMl documentation in the `/doc` directory.
 
 ### Variables
-- #### immutable variables
-Since _Rust_ is designed with concurrency in mind so variables are immutable by defualt. We can declare a variable using the `let` keyword.
-```rust
-let x = 23;
-```
-Now the _name_ `x` is bound to the _value_ `23`. If we try to change this the compiler will throw an error -
-```
-let x = 23;
-x = 45; // this will fail at compile time
-```
-->
-```console
-error[E0384]: cannot assign twice to immutable variable `x`
- --> variables.rs:8:5
-  |
-7 |     let x = 22;
-  |         - first assignment to `x`
-8 |     x = 45;
-  |     ^^^^^^ cannot assign twice to immutable variable
-```
-- #### mutable variables
-We can explicitly declare variables to be mutable when the need arises using the `let mut` syntax.
-```rust
-let mut x = 21;
-x += 2; // increments x to 23
-```
+- #### Immutable variables
+    Since _Rust_ is designed with concurrency in mind so variables are immutable by defualt. We can declare a variable using the `let` keyword.
+    ```rust
+    let x = 23;
+    ```
+    Now the _name_ `x` is bound to the _value_ `23`. If we try to change this the compiler will throw an error -
+    ```
+    let x = 23;
+    x = 45; // this will fail at compile time
+    ```
+    ->
+    ```console
+    error[E0384]: cannot assign twice to immutable variable `x`
+    --> variables.rs:8:5
+    |
+    7 |     let x = 22;
+    |         - first assignment to `x`
+    8 |     x = 45;
+    |     ^^^^^^ cannot assign twice to immutable variable
+    ```
+- #### Mutable variables
+    We can explicitly declare variables to be mutable when the need arises using the `let mut` syntax.
+    ```rust
+    let mut x = 21;
+    x += 2; // increments x to 23
+    ```
 
-- #### constants
-We 
+- #### Constants
+    Constants like immutable variables are _names_ bound to _values_, however they are semantically different in the following ways - 
+    - A constant can only be assigned a "_constant value_". I.e. it cannot be something that is computed at runtime. This is just like in `C/C++`.
+    - Constants unlike variables can be assigned outside functions, and is often at _global_ or _module_ scope.
+    - In _Rust_ the type of a constant has to be specified and cannot be left out to be inferred like in the case of variables.
+    ```rust
+    const UPPER_LIM: u32 = 100;
+    let i = UPPER_LIM;
+    ```
+    
+- #### Shadowing
+    _Rust_ allows us to re-declare a variable within the same scope. This is not usually found in other statically typed languages. We can declare a variable and bind it to a vlaue -
+    ```rust
+    let x = 23;
+    ```
+    And within the same scope we can them do something like -
+    ```rust
+    let x = "hello";
+    ```
+    Now the variable `x` is bound to a new value (`hello`) and the old instance of `x` is _shadowed_. In reality, even though we use the same variable name `x` it is infact a different variable with a different memory location (unlike a `mut` variable where a new _value_ is assigne dto the same _address_).  
+    We can claerly see how the memory address changes with shadowing - 
+    ```rust
+    let a = 2.3;
+    println!("Address of a = {:p}", &a); 
+    // address of variable named 'a' = 0x1dc7affba8
 
-- #### shadowing
-We 
+    let a = 19;
+    println!("Address of a = {:p}", &a); 
+    // address of a different variable named 'a' = 0x1dc7affc04
+
+    let a = "alpha";
+    println!("Address of a = {:p}", &a); 
+    // address of yet another variable named 'a' = 0x1dc7affc58
+    ```
+    With a mutable variable we can see the same address after assighing a new value -
+    ```rust
+    let mut b = 23;
+    println!("Address of b = {:p}", &b);
+    // address of variable named 'b' = 0x5c74cffbc4
+
+    b = 101;
+    println!("Address of b after mutation = {:p}", &b);
+    // address of variable named 'b' after changing value = 0x5c74cffbc4
+    ```
 
 ### Basic Types
+_Rust_ is a _statically typed_ language which implies that the _type_ of all variables should be known at compile time. This is in contrast to _dynamically typed_ languages such as _Python_ or _JavaScript_.  
+The basic data types in _Rust_ are categorized as **Scalar types** and **Coumpound types**.
 
 ### Functions
 

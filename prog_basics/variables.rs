@@ -41,5 +41,4 @@ fn main(){
     println!("Address of b after mutation = {:p}", &b);
     // address of variable named 'b' after changing value = 0x5c74cffbc4
 
-    
 }

@@ -249,6 +249,44 @@ _Rust_ has the same syntax as _C/C++_ for basic comments -
 _Rust_ is a _statically typed_ language which implies that the _type_ of all variables should be known at compile time. This is in contrast to _dynamically typed_ languages such as _Python_ or _JavaScript_.  
 The basic data types in _Rust_ are categorized as **Scalar types** and **Coumpound types**.
 
+#### Scalar Types
+A _Scalar Type_ represents a **single value**, and _Rust_ has four of these - **integers**, **floating-point numbers**, **boolean** and **characters**. This is similar to _C/C++_.
+
+- **Integer**  
+_Integer_ type represents number values without fractional component. The different integer types in _Rust_ based on size are -  
+
+    |  Length  |  Signed  |  Unsigned |
+    |----------|----------|-----------|
+    |   8-bit  |    i8    |    u8     |
+    |  16-bit  |   i16    |   u16     |
+    |  32-bit  |   i32    |   u32     |
+    |  64-bit  |   i64    |   u64     |
+    | 128-bit  |   i128   |  u128     |
+    |   arch   |   isize  |  usize    |
+
+    These integer types differ in their bit-size, and each can have a _signed_ or _unsigned_ variant.  
+    If we do not specify any type the default integer type is `i32`.  
+    The `arch` type automatically applie the size depending on the processor architecture word-size - 32-bit or 64-bit.  
+    The range of each integer type would be -
+    - for signed:  `-2^(n-1)` to `2^(n-1) - 1`  
+        so for `i32` we can have values from `-2,147,483,648` to `2,147,483,647`
+    - for unsigned: `0` to `(2^n)-1`  
+        so for `u32` we can have values from `0` to `4,294,967,295`
+    
+        **Overflow**  
+        If we assign a value exceeding the range of a type _Rust_ will complain and throw a _"panic" / error_ while compiling if it is in _"debug"_ mode. However if it is in _"release"_ mode it will not complain at compile time and we can get unexpected behaviour at runtime, specifically the value will wrap around (_two's complement wrapping_).
+        ```rust
+        let mut a: u8 = 255;
+        println!("'a' initial value = {0}", a);
+        // 'a' initial value = 255
+        a += 1;
+        println!("'a' + 1 = {0}", a);
+        // debug mode - thread 'main' panicked at 'attempt to add with overflow',
+        // release mode - 'a' + 1 = 0 (
+        ```
+- **Floating-Point**  
+For numbers with decimal points _Rust_ has two _floating-point_ types - `f32` and `f64`
+
 ### Functions
 
 ### Control Flow

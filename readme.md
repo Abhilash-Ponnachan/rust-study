@@ -282,10 +282,51 @@ _Integer_ type represents number values without fractional component. The differ
         a += 1;
         println!("'a' + 1 = {0}", a);
         // debug mode - thread 'main' panicked at 'attempt to add with overflow',
-        // release mode - 'a' + 1 = 0 (
+        // release mode - 'a' + 1 = 0 
         ```
+        
+        **Formats**  
+        We can represent integer literals in different formats :
+        |  Format   |  Example    |
+        |-----------|-------------|
+        |  Decimal  | 9_123_345   |
+        |  Hex      | 0xff        |
+        |  Octal    | 0o77        |
+        |  Binary   | 0b1101_0001 |
+        |  Byte(u8) | b'A'        |
+
 - **Floating-Point**  
-For numbers with decimal points _Rust_ has two _floating-point_ types - `f32` and `f64`
+For numbers with decimal points _Rust_ has two _floating-point_ types - `f32` and `f64`. |The default in _Rust_ is `f64` because in modern processors 64 operations are nearly as fast as 32 bit and gives more precision.  
+    ```rust
+    let b = 3.3; // f64 - default floating point type
+    let c: f32 = 5.0; // f32
+    ```
+
+    **Numeric Operations**  
+    _Rust_ supports the standard numeric operations such as `+`, `-`, `/`, `%`.  
+    Unlike some other languages _Rust_ is very strict in type checking and **will not do implicit casting** with numeric operations if we mix up _float_ and _integer_ types.  
+
+- **Boolean**  
+A `bool` type can take either of two values `true` or `false`. It takes _1 Byte_ in memory.
+    ```rust
+    let f = true;
+    println!("Opposite of {0} is {1}", f, !f);
+    //Opposite of true is false
+    ```
+
+- **Character**  
+_Rust_ `char` data type allows us to represent characters. They are four bytes in size and uses Unicode UTF-8 encoding. Their values can range from `U+0000` to `U+D7FF` and `U+E000` to `U+10FFFF`. Like most other languages `char` literals are enclosed in single quotes ('').  
+    ```rust
+    let g = 'A';
+    let h = '\u{41}';   // unicode value of 'A' in Hex
+    let i = '\u{03A3}'; // unicode value of Greek Zigma in Hex
+    println!("{0}, {1}, {2}", g, h, i); 
+    //A, A, Σ
+    ```
+    Since `char` is 4 byte data type they are different from the way we are used to dealing with them in ASCII and we shall examine later about how _String stores UTF-8 encoded text_.
+
+#### Compound Types
+A _Compound Type_ can contain/group multiple values into one. _Rust_ has two primitive _compound types_ - **tuple** and **array**
 
 ### Functions
 

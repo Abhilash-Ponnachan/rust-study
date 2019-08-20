@@ -326,7 +326,74 @@ _Rust_ `char` data type allows us to represent characters. They are four bytes i
     Since `char` is 4 byte data type they are different from the way we are used to dealing with them in ASCII and we shall examine later about how _String stores UTF-8 encoded text_.
 
 #### Compound Types
-A _Compound Type_ can contain/group multiple values into one. _Rust_ has two primitive _compound types_ - **tuple** and **array**
+A _Compound Type_ can contain/group multiple values into one. _Rust_ has two primitive _compound types_ - **Tuples** and **Arrays**
+
+- **Tuples**  
+A _tuple_ is a grouping together of multiple values into one collection. It can group together values of _different types_. Once declared it is fixed in size and cannot grow. The values can be changed if it is declared mutable though.  
+_Tuple_ literals are decalred by enclosing the values in prantheses separated by commas - 
+    ```rust
+    let rec = ("Alan", 1001, 75.3);
+    ```
+    If we wish to decalre the types of the vlaues within the declaration we can do so by specifying them in parantheses as a type for the variable - 
+    ```rust
+    let rec: (&'static str, i32, f32) = ("Alan", 1001, 75.3);
+    ```
+    _Note: the `&'static str` stands for a `slice` of `str` type with `ststic` lifetime, i.e. `string literal`._
+    
+    To access the elements of a _tuple_ we can use either the _dot syntax (.\<index>)_ OR _destructuring_.
+    ```rust
+    let mut rec = ("Alan", 1001, 78.6);
+    // accessing the elements using .<index> and changing it
+    rec.1 = 1002;
+    println!("Record is {:?}", rec);
+    // Record is ("Alan", 1002, 78.6)
+
+    // accessing using destructuring
+    let (name, _ , weight) = rec;
+    println!("{0} weighs {1} Kg!", name, weight);
+    // Alan weighs 78.6 Kg!
+    ```
+    _Note: `'_'` is a placeholder for values we don't care for while destructuring. This is same as in most other programming languages._
+
+- **Arrays**  
+_Arrays_ in _Rust_ are homegenous collection of items (i.e. the values are of the same type). However unlike many other languages, _arrays_ in _Rust_ are **fixed size**, so they cannot grow or shrink.  
+Arrays are declared by enclosing the values in square brackets seperated by commas - 
+    ```rust
+    let scores = [87, 67, 48, 56, 73];
+    ```
+    They can have their type specified -
+    ```rust
+    let vow: [char; 5] = ['a', 'e', 'i', 'o', 'u'];
+    // note type declaration uses ';'
+    ```
+    There is a shorthand for initializing an array if we want it to all have the same value -
+    ```rust
+    let base = [0; 5]
+    // SAME AS - let base = [0, 0, 0, 0, 0]
+    ```
+    Accessing elements of an array uses the standard syntax of `'<array_name>[<index>]'` -
+    ```rust
+    let mut scores = [87, 67, 48, 56, 73];
+    // access the first element & modify it (mut array)
+    scores[0] = 92;
+    // using len() method to get the length
+    scores[scores.len() - 1] = 78; 
+    print!("New scores are {:?}", scores);
+    // New scores are [92, 67, 48, 56, 78]
+    ```
+    If we attempt to access and element outside the range of the array, _Rust_ will throw an _'index out of bounds..'_ error at runtime.
+
+The difference between a **tuple** and an **array** is the intented purpose for each. A **tuple** is menat to be used as a coumpond type for passing a set set of values around - as arguments to functions or return them. Whereas an **array* is used as an iterable collection of values.
+```rust
+// array of scores
+let scores = [87, 67, 48, 56, 73];
+let mut sum = 0;
+// using 'for' to iterate over the array
+for i in scores.iter(){
+    sum += i;
+}
+println!("Total score = {0}", sum);
+```
 
 ### Functions
 

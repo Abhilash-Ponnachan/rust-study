@@ -396,5 +396,34 @@ println!("Total score = {0}", sum);
 ```
 
 ### Functions
+In _Rust_ functions are a fundamental unit of code. Execution starts with the special _entry point_ function `main`. Unlike many other object-oriented languages we do not need to wrap the function in a `class` or `object`.  
+We declare a function using the `fn` keyword folowed by the _function name_, then _paramters_ within parantheses, an optional _return type_ and finally the _body_ of the function within curly braces -
+  ```rust
+    // function with no parameters
+    fn say_hello(){
+        println!("Hola!");
+    }
+
+    // function with parameters
+    fn say_hello_to(name: &str){
+        // paramter type is 'str slice'
+        println!("Hello {0}!", name);
+    }
+
+    // function with params & return type
+    // param type = slice of array
+    // return type = i32
+    fn get_mean(nums: &[i32]) -> i32{
+        let mut sum = 0;
+        for i in nums.iter(){
+            sum += i;
+        }
+        return sum / nums.len() as i32;
+    }
+  ```
+_NOTE: The convention in Rust is to use `snake_case` (smaller case words separated by '\_') for function names._  
+_Rust_ function names have to be unique within its scope as it does not support _function overloading_ directly.
+
+#### Statements vs Expressions
 
 ### Control Flow

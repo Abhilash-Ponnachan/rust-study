@@ -422,8 +422,88 @@ We declare a function using the `fn` keyword folowed by the _function name_, the
     }
   ```
 _NOTE: The convention in Rust is to use `snake_case` (smaller case words separated by '\_') for function names._  
-_Rust_ function names have to be unique within its scope as it does not support _function overloading_ directly.
+_Rust_ function names have to be unique within its scope as it does not support _function overloading_ directly.  
+In the last example we coudl have the last line of the function as -
+```rust
+fn get_mean(nums: &[i32]) -> i32{
+    ...
+    sum / nums.len() as i32
+    // Note: last line is an expression (no ;)
+}
+```
+In _Rust_ the last expression in teh function body is implicitly treated as the return value. We do not explicitly need to use the `return` keyword unlesswe wish to return early.
 
 #### Statements vs Expressions
+A set of instructions that can be used as the RHS of an assignment is an _Expression_, it implicitly evaluates to some value.  
+A _Statement_ on the other hand is simply a set of instructions and cannot be treated like a value.  
+This is a familiar concept from many other langauges (such as - Ruby, Python, C#).  
+```rust
+    let root = {
+        let r = rslt as f32;
+        r.sqrt() // Note: no ;
+    };
+    //  'r.sqrt()' gets assigned to 'root'
+    println!("Root = {0}", root);
+}
+```
+In _Rust_ the last line of an expression should NOT have a semicolon (;), whereas statements should always end with semicolon.
 
 ### Control Flow
+The basic control flow constructs are _conditional branching_ using the `if .. else` expression and _looping_ commands such as `loop`, `while` and `for`.    
+- **Conditional Flow (`if..else`)**  
+    The `if..else` conditional flow construct is like most other languages -
+    ```rust
+    if root > 5.0 {
+            println!("{0} is too Big!", root);
+    }
+    else if root > 3.0 {
+            println!("{0} seems alright.", root);
+    }
+    else {
+            println!("{0} is too Low!", root);
+    }
+    ```
+    In _Rust_ `if..else` is an _expression_, so we can use it for conditional assignement (lie we would use the _ternary operator_ in _C_) - 
+    ```rust
+    let comment = if root > 5.0 {
+        "Too Big!" // Note - NO ;
+    }
+    else if root > 3.0 {
+        "Seems alright." // Note - NO ;
+    }
+    else {
+        "Too Low!" // Note - NO ;
+    };
+    // Note - expressin value should not end in semicolon
+    println!("{}", comment);
+    ```
+- **Looping (`loop`)**  
+    The `loop` keyword tells _Rust_ to keep repeating a block of code again and again (unless something causes it to `break` out of it).
+    ```rust
+    let mut i = 1;
+    loop{
+        print!("{},", i);
+        i += 1;
+        if i > 10 {
+            break;
+        }
+    };
+    // repeats the above block 10 times
+    // 1,2,3,4,5,6,7,8,9,10,
+    ```
+    The `loop` construct can be used as an expression. It returns the value (or expression) after the `break` keyword -
+    ```rust
+    //loop as an expression
+    let (mut i, mut sum) = (0, 0);
+    let rslt = loop{
+        i += 1;
+        sum += i * i;
+        if i > 10{
+            break sum; // 'sum' is returned from the loop
+        }
+    };
+    // 'rslt' will now have the value of 'sum'
+    println!("{}", rslt);
+    // 506
+    ```
+    

@@ -3,9 +3,18 @@ fn main(){
     say_hello();
     say_hello_to("Alan");
 
-    let nums = [10, 20, 30, 40];
-    println!("Mean = {0}", get_mean(&nums));
-    // Mean = 25
+    let nums = [10, 20, 30, 40, 50];
+    let mean = get_mean(&nums);
+    println!("Mean = {0}", mean);
+    // Mean = 30
+
+    let root = {
+        let r = mean as f32; //note: 'mean' from outer scope
+        r.sqrt() // no semicolon
+    };
+    // value of 'r.sqrt()' gets assigned to 'root'
+    println!("Root = {0}", root);
+    // Root = 5.477226
 }
 
 // function with no parameters

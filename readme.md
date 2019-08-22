@@ -506,4 +506,40 @@ The basic control flow constructs are _conditional branching_ using the `if .. e
     println!("{}", rslt);
     // 506
     ```
-    
+- **Conditional Looping (`while`)**  
+    For looping based on a condition the normal contruct to use is teh `while` loop. This is a basic looping construct found in almost all programming languages and is the same in _Rust_ -
+    ```rust
+    let mut j = 1;
+    let mut fact = 1;
+    while j <= 3 {
+        // executes the body as long as 
+        // the condition above is true
+        fact *= j;
+        j += 1;
+    }
+    println!("Factorial = {0}", fact);
+    ```
+- **Looping over Iterables (`for .. in`)**  
+    `for .. in` is the construct in _Rust_ that implements iteration over iterable collections -
+    ```rust
+    let scores = [67, 84, 47, 56, 78];
+    let mut mean_score = 0;
+    for s in &scores{ // use 'slice` or '.iter()'
+        mean_score += s;
+    }
+    mean_score /= scores.len();
+    println!("Mean score = {0}", mean_score);
+    // Mean score = 66
+    ``` 
+    This approach is preferred over using `while` loops for iterating collections as it uses the collections own (intented) iteration behaviour and we do not concern with bounds and indexing etc.  
+    Even for repeating code a certain number of times the idiomatic way in _Rust_ is to use `for .. in` with a _Range_ -
+    ```rust
+    let mut fact = 1;
+    for i in 1..10{ // using range 1..10
+        fact *= i;
+    }
+    println!("Factorial = {0}", fact);
+    // Factorial = 362880
+    ```
+### Ownership in Rust
+The

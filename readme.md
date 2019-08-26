@@ -541,5 +541,20 @@ The basic control flow constructs are _conditional branching_ using the `if .. e
     println!("Factorial = {0}", fact);
     // Factorial = 362880
     ```
-### Ownership in Rust
-The
+### "Ownership" in Rust
+_Rust_ provides memory managment without a _garbage collector_ (like .Net or Java). Its **"ownership"** mechanism enables it to be deterministic about variable lifetimes and therefore make **"memory safety guarantees"**.
+
+- **Ownership**  
+All language runtimes have to manage the memory they use at runtime, and they take different approaches to do this.  
+    - Some of them rely on _generational garabage collection_ (_GC_) that periodically looks for and cleans up unused memory - _'.Net'_, _'Java'_ for example.  
+    - Another approach is _automatic reference counting_ (_ARC_) that tries to keep track of all the references to an allocation and removes it when that count reaches zero - this is the approach taken by _'Swift'_  
+    - Yet other languages put the onus on the programmer to allocate and free up memory - this is the model in _'C'_.  
+
+    _Rust_ does not take dynamic memory deallocation approach like _GC_ or _ARC_, it is actaully "similar" to the _manual_ model of _C_ that have code to explictly deallocate heap objects. The difference is that in _Rust_ the compiler is capable of injecting that deallocation into the code at compile time. This is possible because its strict "ownership" model.
+
+
+
+
+- **Borrowing**
+
+- **Slices**

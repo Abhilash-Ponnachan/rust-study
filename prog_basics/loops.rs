@@ -21,4 +21,11 @@ fn main(){
     mean_score /= scores.len();
     println!("Mean score = {0}", mean_score);
     // Mean score = 66
+
+    let mut fact = 1;
+    for i in 1..10{
+        fact *= i;
+    }
+    println!("Factorial = {0}", fact);
+    // Factorial = 362880
 }

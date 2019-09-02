@@ -542,7 +542,7 @@ The basic control flow constructs are _conditional branching_ using the `if .. e
     // Factorial = 362880
     ```
 ### "Ownership" in Rust
-_Rust_ provides memory managment without a _garbage collector_ (like .Net or Java). Its **"ownership"** mechanism enables it to be deterministic about variable lifetimes and therefore make **"memory safety guarantees"**.
+_Rust_ provides memory managment without a _garbage collector_ (unlike .Net or Java). Its **"ownership"** mechanism enables it to be deterministic about variable lifetimes and therefore make **"memory safety guarantees"**.
 
 - **Ownership**  
 All language runtimes have to manage the memory they use at runtime, and they take different approaches to do this.  
@@ -550,8 +550,24 @@ All language runtimes have to manage the memory they use at runtime, and they ta
     - Another approach is _automatic reference counting_ (_ARC_) that tries to keep track of all the references to an allocation and removes it when that count reaches zero - this is the approach taken by _'Swift'_  
     - Yet other languages put the onus on the programmer to allocate and free up memory - this is the model in _'C'_.  
 
-    _Rust_ does not take dynamic memory deallocation approach like _GC_ or _ARC_, it is actaully "similar" to the _manual_ model of _C_ that have code to explictly deallocate heap objects. The difference is that in _Rust_ the compiler is capable of injecting that deallocation into the code at compile time. This is possible because its strict "ownership" model.
+    _Rust_ does not take dynamic memory deallocation approach like _GC_ or _ARC_, it is actaully "similar" to the _manual_ model of _C_ that have code to explictly deallocate heap objects. The difference is that in _Rust_ the compiler is capable of injecting that deallocation into the code at compile time. This is possible because its strict "ownership" model, which makes the lifetime of objects in memory deterministic at compile time.  
+    _Rust_ keeps track of which part of code is using what data on the _Heap_, minimizing the amount of duplicate data on the _Heap_, and cleaning up unused data.  
 
+- **Rules of "Ownership"**  
+"Ownership" in _Rust_ is based on 3 simple rules -
+    - Each **value** has a variable that is caled its **owner**
+    - There can only be **one owner** at a time
+    - When the **owner** goes out of **scope** the **value** will be **dropped**
+
+    _Note: Rust is "block scoped"_  -  
+    ```rust
+    {
+        let x = "Hello"; // x scope starts
+        ... // x is valid here
+    } // x goes out of scope here
+    ```
+    In order to illustrate the behaviour of _ownership_ we need a more complex data type than the simple _scalar_ types as they are allocated on the **stack** since they have limited ad predetermined size. _string lterails_ will not do either as they are compiled into the binary and have known fixed size.  
+    We need a data type that needs _allocation_ on the **heap** such as the **String** type.
 
 
 

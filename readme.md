@@ -139,7 +139,8 @@ Hello, world!
 We can see the code built, and the output from the executed binary.
 
 ### Check with `cargo`
-`cargo` provides a way to **check** if everything is alright woith our code and is good enough for _build_, without _actually creating executables_. To do this use the `check` command -
+`cargo` provides a way to **check** if everything is alright with our code and is good enough for _build_, without _actually creating executables_. To do this use the `check` command -
+
 ```console
 $ cargo check
     Checking hello_cargo v0.1.0 (<working directory>\hello_cargo)
@@ -154,6 +155,7 @@ In this section we shall cover the basic programming constructs in _Rust_ that a
 _Rust_ has the same syntax as _C/C++_ for basic comments - 
 - Line comments - start with `//`
 - Block comments - enclose in `/* .. */`  
+  
     - However as a convention, the _Rust community_ seems to encourage using line comments (`//`) for multi-line comments (like using `#` on comment line in _Python_).
 - Documentation comments - start with `///`
     - This is used to create HTML documentation from the code using the `rustdoc` tool OR `cargo doc` command if it is a crate (the latter just runs `rustdoc` behind the scene). 
@@ -174,7 +176,7 @@ _Rust_ has the same syntax as _C/C++_ for basic comments -
 
 ### Variables
 - #### Immutable variables
-    Since _Rust_ is designed with concurrency in mind so variables are immutable by defualt. We can declare a variable using the `let` keyword.
+    Since _Rust_ is designed with concurrency in mind so variables are immutable by default. We can declare a variable using the `let` keyword.
     ```rust
     let x = 23;
     ```
@@ -211,7 +213,7 @@ _Rust_ has the same syntax as _C/C++_ for basic comments -
     ```
     
 - #### Shadowing
-    _Rust_ allows us to re-declare a variable within the same scope. This is not usually found in other statically typed languages. We can declare a variable and bind it to a vlaue -
+    _Rust_ allows us to re-declare a variable within the same scope. This is not usually found in other statically typed languages. We can declare a variable and bind it to a value -
     ```rust
     let x = 23;
     ```
@@ -219,27 +221,28 @@ _Rust_ has the same syntax as _C/C++_ for basic comments -
     ```rust
     let x = "hello";
     ```
-    Now the variable `x` is bound to a new value (`hello`) and the old instance of `x` is _shadowed_. In reality, even though we use the same variable name `x` it is infact a different variable with a different memory location (unlike a `mut` variable where a new _value_ is assigne dto the same _address_).  
-    We can claerly see how the memory address changes with shadowing - 
+    Now the variable `x` is bound to a new value (`hello`) and the old instance of `x` is _shadowed_. In reality, even though we use the same variable name `x` it is in-fact a different variable with a different memory location (unlike a `mut` variable where a new _value_ is assigned to the same _address_).  
+    We can clearly see how the memory address changes with shadowing - 
+    
     ```rust
     let a = 2.3;
     println!("Address of a = {:p}", &a); 
-    // address of variable named 'a' = 0x1dc7affba8
-
+// address of variable named 'a' = 0x1dc7affba8
+    
     let a = 19;
     println!("Address of a = {:p}", &a); 
-    // address of a different variable named 'a' = 0x1dc7affc04
-
+// address of a different variable named 'a' = 0x1dc7affc04
+    
     let a = "alpha";
     println!("Address of a = {:p}", &a); 
     // address of yet another variable named 'a' = 0x1dc7affc58
     ```
-    With a mutable variable we can see the same address after assighing a new value -
+    With a mutable variable we can see the same address after assigning a new value -
     ```rust
     let mut b = 23;
     println!("Address of b = {:p}", &b);
-    // address of variable named 'b' = 0x5c74cffbc4
-
+// address of variable named 'b' = 0x5c74cffbc4
+    
     b = 101;
     println!("Address of b after mutation = {:p}", &b);
     // address of variable named 'b' after changing value = 0x5c74cffbc4
@@ -247,27 +250,28 @@ _Rust_ has the same syntax as _C/C++_ for basic comments -
 
 ### Basic Types
 _Rust_ is a _statically typed_ language which implies that the _type_ of all variables should be known at compile time. This is in contrast to _dynamically typed_ languages such as _Python_ or _JavaScript_.  
-The basic data types in _Rust_ are categorized as **Scalar types** and **Coumpound types**.
+The basic data types in _Rust_ are categorised as **Scalar types** and **Compound types**.
 
 #### Scalar Types
 A _Scalar Type_ represents a **single value**, and _Rust_ has four of these - **integers**, **floating-point numbers**, **boolean** and **characters**. This is similar to _C/C++_.
 
 - **Integer**  
-_Integer_ type represents number values without fractional component. The different integer types in _Rust_ based on size are -  
+  _Integer_ type represents number values without fractional component. The different integer types in _Rust_ based on size are -  
 
-    |  Length  |  Signed  |  Unsigned |
-    |----------|----------|-----------|
-    |   8-bit  |    i8    |    u8     |
-    |  16-bit  |   i16    |   u16     |
-    |  32-bit  |   i32    |   u32     |
-    |  64-bit  |   i64    |   u64     |
-    | 128-bit  |   i128   |  u128     |
-    |   arch   |   isize  |  usize    |
+  |  Length  |  Signed  |  Unsigned |
+  |----------|----------|-----------|
+  |   8-bit  |    i8    |    u8     |
+  |  16-bit  |   i16    |   u16     |
+  |  32-bit  |   i32    |   u32     |
+  |  64-bit  |   i64    |   u64     |
+  | 128-bit  |   i128   |  u128     |
+  |   arch   |   isize  |  usize    |
 
     These integer types differ in their bit-size, and each can have a _signed_ or _unsigned_ variant.  
     If we do not specify any type the default integer type is `i32`.  
-    The `arch` type automatically applie the size depending on the processor architecture word-size - 32-bit or 64-bit.  
+    The `arch` type automatically applies the size depending on the processor architecture word-size - 32-bit or 64-bit.  
     The range of each integer type would be -
+
     - for signed:  `-2^(n-1)` to `2^(n-1) - 1`  
         so for `i32` we can have values from `-2,147,483,648` to `2,147,483,647`
     - for unsigned: `0` to `(2^n)-1`  
@@ -329,17 +333,18 @@ _Rust_ `char` data type allows us to represent characters. They are four bytes i
 A _Compound Type_ can contain/group multiple values into one. _Rust_ has two primitive _compound types_ - **Tuples** and **Arrays**
 
 - **Tuples**  
-A _tuple_ is a grouping together of multiple values into one collection. It can group together values of _different types_. Once declared it is fixed in size and cannot grow. The values can be changed if it is declared mutable though.  
-_Tuple_ literals are decalred by enclosing the values in prantheses separated by commas - 
+  A _tuple_ is a grouping together of multiple values into one collection. It can group together values of _different types_. Once declared it is fixed in size and cannot grow. The values can be changed if it is declared mutable though.  
+  _Tuple_ literals are declared by enclosing the values in parentheses separated by commas - 
+
     ```rust
     let rec = ("Alan", 1001, 75.3);
     ```
-    If we wish to decalre the types of the vlaues within the declaration we can do so by specifying them in parantheses as a type for the variable - 
+    If we wish to decalre the types of the vlaues within the declaration we can do so by specifying them in parentheses as a type for the variable - 
     ```rust
     let rec: (&'static str, i32, f32) = ("Alan", 1001, 75.3);
     ```
     _Note: the `&'static str` stands for a `slice` of `str` type with `ststic` lifetime, i.e. `string literal`._
-    
+
     To access the elements of a _tuple_ we can use either the _dot syntax (.\<index>)_ OR _destructuring_.
     ```rust
     let mut rec = ("Alan", 1001, 78.6);
@@ -347,7 +352,7 @@ _Tuple_ literals are decalred by enclosing the values in prantheses separated by
     rec.1 = 1002;
     println!("Record is {:?}", rec);
     // Record is ("Alan", 1002, 78.6)
-
+  
     // accessing using destructuring
     let (name, _ , weight) = rec;
     println!("{0} weighs {1} Kg!", name, weight);
@@ -356,8 +361,9 @@ _Tuple_ literals are decalred by enclosing the values in prantheses separated by
     _Note: `'_'` is a placeholder for values we don't care for while destructuring. This is same as in most other programming languages._
 
 - **Arrays**  
-_Arrays_ in _Rust_ are homegenous collection of items (i.e. the values are of the same type). However unlike many other languages, _arrays_ in _Rust_ are **fixed size**, so they cannot grow or shrink.  
-Arrays are declared by enclosing the values in square brackets seperated by commas - 
+_Arrays_ in _Rust_ are homogeneous collection of items (i.e. the values are of the same type). However unlike many other languages, _arrays_ in _Rust_ are **fixed size**, so they cannot grow or shrink.  
+Arrays are declared by enclosing the values in square brackets separated by commas - 
+  
     ```rust
     let scores = [87, 67, 48, 56, 73];
     ```
@@ -366,7 +372,7 @@ Arrays are declared by enclosing the values in square brackets seperated by comm
     let vow: [char; 5] = ['a', 'e', 'i', 'o', 'u'];
     // note type declaration uses ';'
     ```
-    There is a shorthand for initializing an array if we want it to all have the same value -
+    There is a shorthand for initialising an array if we want it to all have the same value -
     ```rust
     let base = [0; 5]
     // SAME AS - let base = [0, 0, 0, 0, 0]
@@ -383,7 +389,7 @@ Arrays are declared by enclosing the values in square brackets seperated by comm
     ```
     If we attempt to access and element outside the range of the array, _Rust_ will throw an _'index out of bounds..'_ error at runtime.
 
-The difference between a **tuple** and an **array** is the intented purpose for each. A **tuple** is menat to be used as a coumpond type for passing a set set of values around - as arguments to functions or return them. Whereas an **array* is used as an iterable collection of values.
+The difference between a **tuple** and an **array** is the intended purpose for each. A **tuple** is menat to be used as a coumpond type for passing a set set of values around - as arguments to functions or return them. Whereas an **array* is used as an iterable collection of values.
 ```rust
 // array of scores
 let scores = [87, 67, 48, 56, 73];
@@ -397,7 +403,8 @@ println!("Total score = {0}", sum);
 
 ### Functions
 In _Rust_ functions are a fundamental unit of code. Execution starts with the special _entry point_ function `main`. Unlike many other object-oriented languages we do not need to wrap the function in a `class` or `object`.  
-We declare a function using the `fn` keyword folowed by the _function name_, then _paramters_ within parantheses, an optional _return type_ and finally the _body_ of the function within curly braces -
+We declare a function using the `fn` keyword followed by the _function name_, then _parameters_ within parentheses, an optional _return type_ and finally the _body_ of the function within curly braces -
+
   ```rust
     // function with no parameters
     fn say_hello(){
@@ -423,7 +430,8 @@ We declare a function using the `fn` keyword folowed by the _function name_, the
   ```
 _NOTE: The convention in Rust is to use `snake_case` (smaller case words separated by '\_') for function names._  
 _Rust_ function names have to be unique within its scope as it does not support _function overloading_ directly.  
-In the last example we coudl have the last line of the function as -
+In the last example we could have the last line of the function as -
+
 ```rust
 fn get_mean(nums: &[i32]) -> i32{
     ...
@@ -431,12 +439,13 @@ fn get_mean(nums: &[i32]) -> i32{
     // Note: last line is an expression (no ;)
 }
 ```
-In _Rust_ the last expression in teh function body is implicitly treated as the return value. We do not explicitly need to use the `return` keyword unlesswe wish to return early.
+In _Rust_ the last expression in the function body is implicitly treated as the return value. We do not explicitly need to use the `return` keyword unless we wish to return early.
 
 #### Statements vs Expressions
 A set of instructions that can be used as the RHS of an assignment is an _Expression_, it implicitly evaluates to some value.  
 A _Statement_ on the other hand is simply a set of instructions and cannot be treated like a value.  
-This is a familiar concept from many other langauges (such as - Ruby, Python, C#).  
+This is a familiar concept from many other languages (such as - Ruby, Python, C#).  
+
 ```rust
     let root = {
         let r = rslt as f32;
@@ -463,7 +472,7 @@ The basic control flow constructs are _conditional branching_ using the `if .. e
             println!("{0} is too Low!", root);
     }
     ```
-    In _Rust_ `if..else` is an _expression_, so we can use it for conditional assignement (lie we would use the _ternary operator_ in _C_) - 
+    In _Rust_ `if..else` is an _expression_, so we can use it for conditional assignment (lie we would use the _ternary operator_ in _C_) - 
     ```rust
     let comment = if root > 5.0 {
         "Too Big!" // Note - NO ;
@@ -507,7 +516,8 @@ The basic control flow constructs are _conditional branching_ using the `if .. e
     // 506
     ```
 - **Conditional Looping (`while`)**  
-    For looping based on a condition the normal contruct to use is teh `while` loop. This is a basic looping construct found in almost all programming languages and is the same in _Rust_ -
+    For looping based on a condition the normal construct to use is the `while` loop. This is a basic looping construct found in almost all programming languages and is the same in _Rust_ -
+    
     ```rust
     let mut j = 1;
     let mut fact = 1;
@@ -521,6 +531,7 @@ The basic control flow constructs are _conditional branching_ using the `if .. e
     ```
 - **Looping over Iterables (`for .. in`)**  
     `for .. in` is the construct in _Rust_ that implements iteration over iterable collections -
+    
     ```rust
     let scores = [67, 84, 47, 56, 78];
     let mut mean_score = 0;
@@ -530,9 +541,10 @@ The basic control flow constructs are _conditional branching_ using the `if .. e
     mean_score /= scores.len();
     println!("Mean score = {0}", mean_score);
     // Mean score = 66
-    ``` 
-    This approach is preferred over using `while` loops for iterating collections as it uses the collections own (intented) iteration behaviour and we do not concern with bounds and indexing etc.  
+    ```
+    This approach is preferred over using `while` loops for iterating collections as it uses the collections own (intended) iteration behaviour and we do not concern with bounds and indexing etc.  
     Even for repeating code a certain number of times the idiomatic way in _Rust_ is to use `for .. in` with a _Range_ -
+    
     ```rust
     let mut fact = 1;
     for i in 1..10{ // using range 1..10
@@ -542,20 +554,21 @@ The basic control flow constructs are _conditional branching_ using the `if .. e
     // Factorial = 362880
     ```
 ### "Ownership" in Rust
-_Rust_ provides memory managment without a _garbage collector_ (unlike .Net or Java). Its **"ownership"** mechanism enables it to be deterministic about variable lifetimes and therefore make **"memory safety guarantees"**.
+_Rust_ provides memory management without a _garbage collector_ (unlike .Net or Java). Its **"ownership"** mechanism enables it to be deterministic about variable lifetimes and therefore make **"memory safety guarantees"**.
 
 - **Ownership**  
-All language runtimes have to manage the memory they use at runtime, and they take different approaches to do this.  
-    - Some of them rely on _generational garabage collection_ (_GC_) that periodically looks for and cleans up unused memory - _'.Net'_, _'Java'_ for example.  
+  All language runtime have to manage the memory they use at runtime, and they take different approaches to do this.  
+
+    - Some of them rely on _generational garbage collection_ (_GC_) that periodically looks for and cleans up unused memory - _'.Net'_, _'Java'_ for example.  
     - Another approach is _automatic reference counting_ (_ARC_) that tries to keep track of all the references to an allocation and removes it when that count reaches zero - this is the approach taken by _'Swift'_  
     - Yet other languages put the onus on the programmer to allocate and free up memory - this is the model in _'C'_.  
 
-    _Rust_ does not take dynamic memory deallocation approach like _GC_ or _ARC_, it is actaully "similar" to the _manual_ model of _C_ that have code to explictly deallocate heap objects. The difference is that in _Rust_ the compiler is capable of injecting that deallocation into the code at compile time. This is possible because its strict "ownership" model, which makes the lifetime of objects in memory deterministic at compile time.  
-    _Rust_ keeps track of which part of code is using what data on the _Heap_, minimizing the amount of duplicate data on the _Heap_, and cleaning up unused data.  
+    _Rust_ does not take dynamic memory deallocation approach like _GC_ or _ARC_, it is actually "similar" to the _manual_ model of _C_ that have code to explicitly deallocate heap objects. The difference is that in _Rust_ the compiler is capable of injecting that deallocation into the code at compile time. This is possible because its strict "ownership" model, which makes the lifetime of objects in memory deterministic at compile time.  
+    _Rust_ keeps track of which part of code is using what data on the _Heap_, minimising the amount of duplicate data on the _Heap_, and cleaning up unused data.  It takes a similar approach to _Heap_ memory as it does with _Stack_, in that as soon as the _"Owner"_ of the memory goes out of scope it can claim the memory back.
 
 - **Rules of "Ownership"**  
 "Ownership" in _Rust_ is based on 3 simple rules -
-    - Each **value** has a variable that is caled its **owner**
+    - Each **value** has a variable that is called its **owner**
     - There can only be **one owner** at a time
     - When the **owner** goes out of **scope** the **value** will be **dropped**
 
@@ -566,10 +579,100 @@ All language runtimes have to manage the memory they use at runtime, and they ta
         ... // x is valid here
     } // x goes out of scope here
     ```
-    In order to illustrate the behaviour of _ownership_ we need a more complex data type than the simple _scalar_ types as they are allocated on the **stack** since they have limited ad predetermined size. _string lterails_ will not do either as they are compiled into the binary and have known fixed size.  
-    We need a data type that needs _allocation_ on the **heap** such as the **String** type.
+    In order to illustrate the behaviour of _ownership_ we need a more complex data type than the simple _scalar_ types as they are allocated on the **stack** since they have limited ad predetermined size. _string literals_ will not do either as they are compiled into the binary and have known fixed size.  
+    We need a data type that needs _allocation_ on the **heap** such as the **String** type. Unlike _string literals_ the `String` types is able to store a varying amount of text (i.e. it can grow or shrink). Whilst there is a lot to be said of `String`, for our purposes now we shall limit ourselves to aspects that are relevant to memory management.
+  
+  Two convenient ways to create a string is using its static methods `new` and `from`, as shown below -
+  
+  ```rust
+  let x = String::new(); // empty String
+  println!("Value of x = {}", x);
+  // Value of x = 
+  
+  let y = String::from("Hola"); // from string literal
+  println!("Value of y = {}", y);
+  // Value of y = Hola
+  ```
+  
+  `Srtring` gives us methods to modify the text in place -
+  
+  ```rust
+  let mut y = String::from("Hola");
+  println!("Value of y = {}", y);
+  // Value of y = Hola
+  
+  y.push_str(" amigo!");
+  println!("Value of y = {}", y);
+  // Value of y = Hola amigo!
+  ```
+  
+  _Note: How we now have to make the variable `y` 'mutable'_
+  
+  When we need to allocate memory on the _Heap_ we must request it from the **OS**, and we do that when we call `String::from`. When the variable that _owns_ the data in this memory (the variable `y` in our case) goes out of scope _Rust_ injects a method call to a method called `drop`. This is similar to `destructor` in _C++_, the writer of `String` can have cleanup code here. _Rust_ will ensure this method gets called automatically when "ownership" ends.
+  
+  _Note: In C++ this pattern of cleaning up resources at the end of an object's lifetime is called **RAII** or 'Resource Acquisition Is Initialisation'_.  
+  
+- **Variable assignment - "Move"**  
+  We saw that when the variable that is bound to the data goes out of scope the memory for that data is freed. What happens if there are more than one variable bound to the data? Let us see how this might work with the following setup -
 
+  - Assign an `i32` to a variable `a`
+  - Re-assign the data to another variable `b`
+  - Pass 'b' to a custom function `show` to print it to _std I/O_
+    - _there is a reason why we are using this function. It helps simulate ownership transfer situation, as we shall see as we proceed._
+  - Finally call `show` on the original variable `a` again
 
+  ```rust
+  fn main() {
+      let a: i32 = 23;
+      // assign 'a' to 'b'
+      let b = a;
+      show(b);    // 23
+      // now show 'a'
+      show(a);    // 23
+  }
+  // custom function to print value
+  fn show<A: std::fmt::Display>(p: A){
+      println!("{}", p);
+  }
+  ```
+
+  So far so good, now let us try to do this with a `String` data type instead of `i32` - 
+
+  ```rust
+  fn main() {
+      let a: String = String::from("hello");
+      // assign 'a' to 'b'
+      let b = a;
+      show(b);    // hello
+      
+      // now show 'a'
+      show(a);    // Error!
+  }
+  /*
+  error[E0382]: use of moved value: `a`
+   --> src/main.rs:8:10
+    |
+  2 |     let a: String = String::from("hello");
+    |         - move occurs because `a` has type `std::string::String`, which does not implement the `Copy` trait
+  3 |     // assign 'a' to 'b'
+  4 |     let b = a;
+    |             - value moved here
+  ...
+  8 |     show(a);    // 23
+    |          ^ value used here after move
+  */
+  ```
+
+  We get an error, the compiler is panics and and is trying to tell us that we are trying to use the variable `a` after the data has been **moved**, and the "move" occurred at `let b = a`. It goes on to explain that the "move" happened because `String` does not implement the `Copy` trait.
+
+  So as we can see the compiler error is quite descriptive and goes it great detail explaining the scenario. This is one of _Rust's_ philosophy and even though it is quite strict it can be a helpful friend.
+
+  So what happened here is that with `String` (unlike the `i32` value) since the data is allocated on the _Heap_ when a new variable points to the same data, the ownership gets transferred to the new variable and the old variable is no longer associated with the data value. s
+
+   
+
+- **Variable assignment - "Copy"**  
+  All 
 
 - **Borrowing**
 

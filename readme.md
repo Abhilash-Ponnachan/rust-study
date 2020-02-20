@@ -637,7 +637,11 @@ _Rust_ provides memory management without a _garbage collector_ (unlike .Net or 
   }
 ```
   
-So far so good, now let us try to do this with a `String` data type instead of `i32`
+
+  
+  So far so good, now let us try to do this with a `String` data type instead of `i32` - 
+  
+  
   
   ```rust
   // "move" semantics
@@ -658,9 +662,9 @@ So far so good, now let us try to do this with a `String` data type instead of `
     |         - move occurs because `a` has type `std::string::String`, which does not implement the `Copy` trait
   3 |     // assign 'a' to 'b'
   4 |     let b = a;
-    |             - value moved here
+  |             - value moved here
   ...
-  8 |     show(a);    // 23
+8 |     show(a);    // 23
     |          ^ value used here after move
 */
   ```
@@ -668,9 +672,9 @@ So far so good, now let us try to do this with a `String` data type instead of `
   We get an error, the compiler is panics and and is trying to tell us that we are trying to use the variable `a` after the data has been **moved**, and the "move" occurred at `let b = a`. It goes on to explain that the "move" happened because `String` does not implement the `Copy` trait.
 
   So as we can see the compiler error is quite descriptive and goes it great detail explaining the scenario. This is one of _Rust's_ philosophy and even though it is quite strict it can be a helpful friend.
-
+  
   - So what happened here is that with `String` (unlike the `i32` value) since the data is allocated on the _Heap_ when a new variable points to the same data, the ownership gets transferred to the new variable and the old variable is no longer associated with the data value and when we attempt to use the invalidated variable _Rust_ will trow an error.
-
+  
   - Since there is only one owner (`b` in this case) _Rust_ can make a deterministic `free` of the data it points to in memory when `b` goes out of scope (or end of its lifetime).
   
   - In the case of the `i32` it was a simple data type with a fixed size known at compile time and therefore their data is placed on the _Stack_. When we assign it to a new variable _Rust_ makes a **copy** of that data in memory and binds the new variable with that, leaving the old data and variable in tact. When the function call associated with the _Stack_ is complete the _Stack_ frame is removed with all the data in it.

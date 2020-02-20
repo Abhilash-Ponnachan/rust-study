@@ -637,7 +637,7 @@ _Rust_ provides memory management without a _garbage collector_ (unlike .Net or 
   }
 ```
   
-So far so good, now let us try to do this with a `String` data type instead of `i32` - 
+So far so good, now let us try to do this with a `String` data type instead of `i32`
   
   ```rust
   // "move" semantics

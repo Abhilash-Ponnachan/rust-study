@@ -22,7 +22,7 @@ On _Windows_ we can download the **rustup-init.exe**, and from there it basicall
 Once complete, the process ends up installing the following components -
 - `rustup` - **installation** and **version managment** tool
     - _Rust_ has a rapid development and 6 week release cycle, so this tool is essential to manage the versions
-    - To update _Rust_ simply do
+    - To update _Rust_ simply d
     ```bash
     $ rustup update
     ```
@@ -181,11 +181,11 @@ _Rust_ has the same syntax as _C/C++_ for basic comments -
     let x = 23;
     ```
     Now the _name_ `x` is bound to the _value_ `23`. If we try to change this the compiler will throw an error -
-    ```
+    ```rust
     let x = 23;
     x = 45; // this will fail at compile time
     ```
-    ->
+    
     ```console
     error[E0384]: cannot assign twice to immutable variable `x`
     --> variables.rs:8:5
@@ -227,11 +227,11 @@ _Rust_ has the same syntax as _C/C++_ for basic comments -
     ```rust
     let a = 2.3;
     println!("Address of a = {:p}", &a); 
-// address of variable named 'a' = 0x1dc7affba8
+    // address of variable named 'a' = 0x1dc7affba8
     
     let a = 19;
     println!("Address of a = {:p}", &a); 
-// address of a different variable named 'a' = 0x1dc7affc04
+    // address of a different variable named 'a' = 0x1dc7affc04
     
     let a = "alpha";
     println!("Address of a = {:p}", &a); 
@@ -241,7 +241,7 @@ _Rust_ has the same syntax as _C/C++_ for basic comments -
     ```rust
     let mut b = 23;
     println!("Address of b = {:p}", &b);
-// address of variable named 'b' = 0x5c74cffbc4
+    // address of variable named 'b' = 0x5c74cffbc4
     
     b = 101;
     println!("Address of b after mutation = {:p}", &b);
@@ -279,6 +279,7 @@ A _Scalar Type_ represents a **single value**, and _Rust_ has four of these - **
     
         **Overflow**  
         If we assign a value exceeding the range of a type _Rust_ will complain and throw a _"panic" / error_ while compiling if it is in _"debug"_ mode. However if it is in _"release"_ mode it will not complain at compile time and we can get unexpected behaviour at runtime, specifically the value will wrap around (_two's complement wrapping_).
+
         ```rust
         let mut a: u8 = 255;
         println!("'a' initial value = {0}", a);
@@ -288,7 +289,7 @@ A _Scalar Type_ represents a **single value**, and _Rust_ has four of these - **
         // debug mode - thread 'main' panicked at 'attempt to add with overflow',
         // release mode - 'a' + 1 = 0 
         ```
-        
+    
         **Formats**  
         We can represent integer literals in different formats :
         |  Format   |  Example    |
@@ -300,7 +301,8 @@ A _Scalar Type_ represents a **single value**, and _Rust_ has four of these - **
         |  Byte(u8) | b'A'        |
 
 - **Floating-Point**  
-For numbers with decimal points _Rust_ has two _floating-point_ types - `f32` and `f64`. |The default in _Rust_ is `f64` because in modern processors 64 operations are nearly as fast as 32 bit and gives more precision.  
+For numbers with decimal points _Rust_ has two _floating-point_ types - `f32` and `f64`. |The default in _Rust_ is `f64` because in modern processors 64 operations are nearly as fast as 32 bit and gives more precision. 
+
     ```rust
     let b = 3.3; // f64 - default floating point type
     let c: f32 = 5.0; // f32
@@ -312,22 +314,22 @@ For numbers with decimal points _Rust_ has two _floating-point_ types - `f32` an
 
 - **Boolean**  
 A `bool` type can take either of two values `true` or `false`. It takes _1 Byte_ in memory.
-    ```rust
-    let f = true;
-    println!("Opposite of {0} is {1}", f, !f);
-    //Opposite of true is false
-    ```
+```rust
+let f = true;
+println!("Opposite of {0} is {1}", f, !f);
+//Opposite of true is false
+```
 
 - **Character**  
-_Rust_ `char` data type allows us to represent characters. They are four bytes in size and uses Unicode UTF-8 encoding. Their values can range from `U+0000` to `U+D7FF` and `U+E000` to `U+10FFFF`. Like most other languages `char` literals are enclosed in single quotes ('').  
-    ```rust
-    let g = 'A';
-    let h = '\u{41}';   // unicode value of 'A' in Hex
-    let i = '\u{03A3}'; // unicode value of Greek Zigma in Hex
-    println!("{0}, {1}, {2}", g, h, i); 
-    //A, A, Σ
-    ```
-    Since `char` is 4 byte data type they are different from the way we are used to dealing with them in ASCII and we shall examine later about how _String stores UTF-8 encoded text_.
+_Rust_ `char` data type allows us to represent characters. They are four bytes in size and uses Unicode UTF-8 encoding. Their values can range from `U+0000` to `U+D7FF` and `U+E000` to `U+10FFFF`. Like most other languages `char` literals are enclosed in single quotes ('').
+```rust
+let g = 'A';
+let h = '\u{41}';   // unicode value of 'A' in Hex
+let i = '\u{03A3}'; // unicode value of Greek Zigma in Hex
+println!("{0}, {1}, {2}", g, h, i); 
+//A, A, Σ
+```
+Since `char` is 4 byte data type they are different from the way we are used to dealing with them in ASCII and we shall examine later about how _String stores UTF-8 encoded text_.
 
 #### Compound Types
 A _Compound Type_ can contain/group multiple values into one. _Rust_ has two primitive _compound types_ - **Tuples** and **Arrays**
@@ -361,9 +363,9 @@ A _Compound Type_ can contain/group multiple values into one. _Rust_ has two pri
     _Note: `'_'` is a placeholder for values we don't care for while destructuring. This is same as in most other programming languages._
 
 - **Arrays**  
-_Arrays_ in _Rust_ are homogeneous collection of items (i.e. the values are of the same type). However unlike many other languages, _arrays_ in _Rust_ are **fixed size**, so they cannot grow or shrink.  
-Arrays are declared by enclosing the values in square brackets separated by commas - 
-  
+    _Arrays_ in _Rust_ are homogeneous collection of items (i.e. the values are of the same type). However unlike many other languages, _arrays_ in _Rust_ are **fixed size**, so they cannot grow or shrink. 
+
+    Arrays are declared by enclosing the values in square brackets separated by commas - 
     ```rust
     let scores = [87, 67, 48, 56, 73];
     ```
@@ -372,7 +374,7 @@ Arrays are declared by enclosing the values in square brackets separated by comm
     let vow: [char; 5] = ['a', 'e', 'i', 'o', 'u'];
     // note type declaration uses ';'
     ```
-    There is a shorthand for initialising an array if we want it to all have the same value -
+    There is a shorthand for initialising an array if we want it to all have the same value 
     ```rust
     let base = [0; 5]
     // SAME AS - let base = [0, 0, 0, 0, 0]
@@ -389,18 +391,17 @@ Arrays are declared by enclosing the values in square brackets separated by comm
     ```
     If we attempt to access and element outside the range of the array, _Rust_ will throw an _'index out of bounds..'_ error at runtime.
 
-The difference between a **tuple** and an **array** is the intended purpose for each. A **tuple** is menat to be used as a coumpond type for passing a set set of values around - as arguments to functions or return them. Whereas an **array* is used as an iterable collection of values.
-```rust
-// array of scores
-let scores = [87, 67, 48, 56, 73];
-let mut sum = 0;
-// using 'for' to iterate over the array
-for i in scores.iter(){
-    sum += i;
-}
-println!("Total score = {0}", sum);
-```
-
+    The difference between a **tuple** and an **array** is the intended purpose for each. A **tuple** is menat to be used as a coumpond type for passing a set set of values around - as arguments to functions or return them. Whereas an **array* is used as an iterable collection of values.
+    ```rust
+    // array of scores
+    let scores = [87, 67, 48, 56, 73];
+    let mut sum = 0;
+    // using 'for' to iterate over the array
+    for i in scores.iter(){
+        sum += i;
+    }
+    println!("Total score = {0}", sum);
+    ```
 ### Functions
 In _Rust_ functions are a fundamental unit of code. Execution starts with the special _entry point_ function `main`. Unlike many other object-oriented languages we do not need to wrap the function in a `class` or `object`.  
 We declare a function using the `fn` keyword followed by the _function name_, then _parameters_ within parentheses, an optional _return type_ and finally the _body_ of the function within curly braces -
@@ -567,50 +568,51 @@ _Rust_ provides memory management without a _garbage collector_ (unlike .Net or 
     _Rust_ keeps track of which part of code is using what data on the _Heap_, minimising the amount of duplicate data on the _Heap_, and cleaning up unused data.  It takes a similar approach to _Heap_ memory as it does with _Stack_, in that as soon as the _"Owner"_ of the memory goes out of scope it can claim the memory back.
 
 - **Rules of "Ownership"**  
-"Ownership" in _Rust_ is based on 3 simple rules -
-    - Each **value** has a variable that is called its **owner**
-    - There can only be **one owner** at a time
-    - When the **owner** goes out of **scope** the **value** will be **dropped**
+    "Ownership" in _Rust_ is based on 3 simple rules -
+        - Each **value** has a variable that is called its **owner**
+        - There can only be **one owner** at a time
+        - When the **owner** goes out of **scope** the **value** will be **dropped**
 
-    _Note: Rust is "block scoped"_  -  
-    ```rust
-    {
-        let x = "Hello"; // x scope starts
-        ... // x is valid here
-    } // x goes out of scope here
-    ```
+        _Note: Rust is "block scoped"_ -
+    
+        ```rust
+        {
+            let x = "Hello"; // x scope starts
+            ... // x is valid here
+        } // x goes out of scope here
+        ```
+        
     In order to illustrate the behaviour of _ownership_ we need a more complex data type than the simple _scalar_ types as they are allocated on the **stack** since they have limited ad predetermined size. _string literals_ will not do either as they are compiled into the binary and have known fixed size.  
     We need a data type that needs _allocation_ on the **heap** such as the **String** type. Unlike _string literals_ the `String` types is able to store a varying amount of text (i.e. it can grow or shrink). Whilst there is a lot to be said of `String`, for our purposes now we shall limit ourselves to aspects that are relevant to memory management.
-  
-  Two convenient ways to create a string is using its static methods `new` and `from`, as shown below -
-  
-  ```rust
-  let x = String::new(); // empty String
-  println!("Value of x = {}", x);
-  // Value of x = 
-  
-  let y = String::from("Hola"); // from string literal
-  println!("Value of y = {}", y);
-  // Value of y = Hola
-  ```
-  
-  `Srtring` gives us methods to modify the text in place -
-  
-  ```rust
-  let mut y = String::from("Hola");
-  println!("Value of y = {}", y);
-  // Value of y = Hola
-  
-  y.push_str(" amigo!");
-  println!("Value of y = {}", y);
-  // Value of y = Hola amigo!
-  ```
-  
-  _Note: How we now have to make the variable `y` 'mutable'_
-  
-  When we need to allocate memory on the _Heap_ we must request it from the **OS**, and we do that when we call `String::from`. When the variable that _owns_ the data in this memory (the variable `y` in our case) goes out of scope _Rust_ injects a method call to a method called `drop`. This is similar to `destructor` in _C++_, the writer of `String` can have cleanup code here. _Rust_ will ensure this method gets called automatically when "ownership" ends.
-  
-  _Note: In C++ this pattern of cleaning up resources at the end of an object's lifetime is called **RAII** or 'Resource Acquisition Is Initialisation'_.  
+    
+    Two convenient ways to create a string is using its static methods `new` and `from`, as shown below -
+    ```rust
+    let x = String::new(); // empty String
+    println!("Value of x = {}", x);
+    // Value of x = 
+
+    let y = String::from("Hola"); // from string literal
+    println!("Value of y = {}", y);
+    // Value of y = Hola
+    ```
+
+    `Srtring` gives us methods to modify the text in place -
+
+    ```rust
+    let mut y = String::from("Hola");
+    println!("Value of y = {}", y);
+    // Value of y = Hola
+
+    y.push_str(" amigo!");
+    println!("Value of y = {}", y);
+    // Value of y = Hola amigo!
+    ```
+
+    _Note: How we now have to make the variable `y` 'mutable'_
+
+    When we need to allocate memory on the _Heap_ we must request it from the **OS**, and we do that when we call `String::from`. When the variable that _owns_ the data in this memory (the variable `y` in our case) goes out of scope _Rust_ injects a method call to a method called `drop`. This is similar to `destructor` in _C++_, the writer of `String` can have cleanup code here. _Rust_ will ensure this method gets called automatically when "ownership" ends.
+        
+    _Note: In C++ this pattern of cleaning up resources at the end of an object's lifetime is called **RAII** or 'Resource Acquisition Is Initialisation'_.  
   
 - **Variable assignment - "Move or Copy"**  
   We saw that when the variable that is bound to the data goes out of scope the memory for that data is freed. What happens if there are more than one variable bound to the data? Let us see how this might work with the following setup -
@@ -621,92 +623,81 @@ _Rust_ provides memory management without a _garbage collector_ (unlike .Net or 
     - _there is a reason why we are using this function. It helps simulate ownership transfer situation, as we shall see as we proceed._
   - Finally call `show` on the original variable `a` again
 
-  ```rust
-  // "copy" semantics
-  fn main() {
-      let a: i32 = 23;
-      // assign 'a' to 'b'
-      let b = a;
-      show(b);    // 23
-      // now show 'a'
-      show(a);    // 23
-  }
-  // custom function to print value
-  fn show<A: std::fmt::Display>(p: A){
-      println!("{}", p);
-  }
-```
-  
+    ```rust
+    // "copy" semantics
+    fn main() {
+        let a: i32 = 23;
+        // assign 'a' to 'b'
+        let b = a;
+        show(b);    // 23
+        // now show 'a'
+        show(a);    // 23
+    }
+    // custom function to print value
+    fn show<A: std::fmt::Display>(p: A){
+        println!("{}", p);
+    }
+    ```
 
-  
-  So far so good, now let us try to do this with a `String` data type instead of `i32` - 
-  
-  
-  
-  ```rust
-  // "move" semantics
-  fn main() {
-      let a: String = String::from("hello");
-      // assign 'a' to 'b'
-      let b = a;
-      show(b);    // hello
-      
-      // now show 'a'
-      show(a);    // Error!
-  }
-  /*
-  error[E0382]: use of moved value: `a`
-   --> src/main.rs:8:10
+    So far so good, now let us try to do this with a `String` data type instead of `i32` - 
+    ```rust
+    // "move" semantics
+    fn main() {
+        let a: String = String::from("hello");
+        // assign 'a' to 'b'
+        let b = a;
+        show(b);    // hello
+        
+        // now show 'a'
+        show(a);    // Error!
+    }
+    /*
+    error[E0382]: use of moved value: `a`
+    --> src/main.rs:8:10
     |
-  2 |     let a: String = String::from("hello");
+    2 |     let a: String = String::from("hello");
     |         - move occurs because `a` has type `std::string::String`, which does not implement the `Copy` trait
-  3 |     // assign 'a' to 'b'
-  4 |     let b = a;
-  |             - value moved here
-  ...
-8 |     show(a);    // 23
+    3 |     // assign 'a' to 'b'
+    4 |     let b = a;
+    |             - value moved here
+    ...
+    8 |     show(a);    // 23
     |          ^ value used here after move
-*/
-  ```
+    */
+    ```
+    We get an error, the compiler is panics and and is trying to tell us that we are trying to use the variable `a` after the data has been **moved**, and the "move" occurred at `let b = a`. It goes on to explain that the "move" happened because `String` does not implement the `Copy` trait.
 
-  We get an error, the compiler is panics and and is trying to tell us that we are trying to use the variable `a` after the data has been **moved**, and the "move" occurred at `let b = a`. It goes on to explain that the "move" happened because `String` does not implement the `Copy` trait.
+    So as we can see the compiler error is quite descriptive and goes it great detail explaining the scenario. This is one of _Rust's_ philosophy and even though it is quite strict it can be a helpful friend.
 
-  So as we can see the compiler error is quite descriptive and goes it great detail explaining the scenario. This is one of _Rust's_ philosophy and even though it is quite strict it can be a helpful friend.
-  
-  - So what happened here is that with `String` (unlike the `i32` value) since the data is allocated on the _Heap_ when a new variable points to the same data, the ownership gets transferred to the new variable and the old variable is no longer associated with the data value and when we attempt to use the invalidated variable _Rust_ will trow an error.
-  
-  - Since there is only one owner (`b` in this case) _Rust_ can make a deterministic `free` of the data it points to in memory when `b` goes out of scope (or end of its lifetime).
-  
-  - In the case of the `i32` it was a simple data type with a fixed size known at compile time and therefore their data is placed on the _Stack_. When we assign it to a new variable _Rust_ makes a **copy** of that data in memory and binds the new variable with that, leaving the old data and variable in tact. When the function call associated with the _Stack_ is complete the _Stack_ frame is removed with all the data in it.
-  - With dynamic data such as `String` we cannot use the _Stack_, they are allocated on the _Heap_. Allocation and deallocation on the _Heap_ is expensive and can become a significant performance bottleneck. _Rust_ does not implicitly create _deep copies_. 
-  - So the approach _Rust_ has taken to memory management on the _Heap_ is to **move** ownership whenever some data on the _Heap_ is assigned to another variable or passed to some function as an argument (in the later case the function parameter gets the **ownership**).
-  - The mechanism that is used the language level is the `Copy` **trait** (a _trait_ is like an interface, we shall learn more about them later). Simple scalar types such as Integer, Float, Double, Boolean, Character and Tuples of these can be placed on the _Stack_, and they have the `Copy` trait. That way when another variable/parameter needs them it gets a copy of the data (similar to _"Pass by Value"_ in _C++_). We can have our custom types implement types implement the `Copy` trait, and then _Rust_ will treat it with the **copy semantics** just like it does for the builtin scalar types. However if our type has the `Drop` trait, then it will not allow us to implement the `Copy` trait on that type. As we have seen `drop` is for cleanup behaviour when the owner goes out of scope. It does not make sense to have both traits.
-  - 
-  
+    - So what happened here is that with `String` (unlike the `i32` value) since the data is allocated on the _Heap_ when a new variable points to the same data, the ownership gets transferred to the new variable and the old variable is no longer associated with the data value and when we attempt to use the invalidated variable _Rust_ will trow an error.
+
+    - Since there is only one owner (`b` in this case) _Rust_ can make a deterministic `free` of the data it points to in memory when `b` goes out of scope (or end of its lifetime).
+
+    - In the case of the `i32` it was a simple data type with a fixed size known at compile time and therefore their data is placed on the _Stack_. When we assign it to a new variable _Rust_ makes a **copy** of that data in memory and binds the new variable with that, leaving the old data and variable in tact. When the function call associated with the _Stack_ is complete the _Stack_ frame is removed with all the data in it.
+    - With dynamic data such as `String` we cannot use the _Stack_, they are allocated on the _Heap_. Allocation and deallocation on the _Heap_ is expensive and can become a significant performance bottleneck. _Rust_ does not implicitly create _deep copies_. 
+    - So the approach _Rust_ has taken to memory management on the _Heap_ is to **move** ownership whenever some data on the _Heap_ is assigned to another variable or passed to some function as an argument (in the later case the function parameter gets the **ownership**).
+    - The mechanism that is used the language level is the `Copy` **trait** (a _trait_ is like an interface, we shall learn more about them later). Simple scalar types such as Integer, Float, Double, Boolean, Character and Tuples of these can be placed on the _Stack_, and they have the `Copy` trait. That way when another variable/parameter needs them it gets a copy of the data (similar to _"Pass by Value"_ in _C++_). We can have our custom types implement types implement the `Copy` trait, and then _Rust_ will treat it with the **copy semantics** just like it does for the builtin scalar types. However if our type has the `Drop` trait, then it will not allow us to implement the `Copy` trait on that type. As we have seen `drop` is for cleanup behaviour when the owner goes out of scope. It does not make sense to have both traits.
+
 - **Variable assignment - "Clone"**  
-  If we do want to create a deep copy of the data on the _Heap_, we can do that for objects that support the `clone` method.
-
-```rust
-fn main() {
-    let a: String = String::from("hello");
-    // clone 'a' to 'b'
-    let b = a.clone();
-    show(b);    // hello
-    
-    // now show 'a'
-    show(a);    // hello
-}
-```
-
-Here `b` gets a **cloned** copy of the string `hello` and it leaves `a` intact with individual ownership to the separate data copies in memory. 
+    If we do want to create a deep copy of the data on the _Heap_, we can do that for objects that support the `clone` method.
+    ```rust
+    fn main() {
+        let a: String = String::from("hello");
+        // clone 'a' to 'b'
+        let b = a.clone();
+        show(b);    // hello
+        
+        // now show 'a'
+        show(a);    // hello
+    }
+    ```
+    Here `b` gets a **cloned** copy of the string `hello` and it leaves `a` intact with individual ownership to the separate data copies in memory. 
 
 - **Function calls and Ownership**  
   **Ownership** and memory management comes into concern not only during _variable assignment_, the same semantics apply when we invoke functions passing the data around.
 
   - **Passing data to a Function**
-
     Passing a variable to a function call as an argument will result in an **ownership move or copy**, depending on the data type (just like assigning to a variable). In this case it is technically an assignment to the function's formal parameter. We can demonstrate that in our code snippet with a small rearrangement -
-
     ```rust
     fn main() {
         let a: i32 = 23;
@@ -718,7 +709,6 @@ Here `b` gets a **cloned** copy of the string `hello` and it leaves `a` intact w
         let b = a; // 23
     }
     ```
-
     Passing an `i32` as argument to a function results in a **copy**.
 
     ```rust
@@ -749,7 +739,6 @@ Here `b` gets a **cloned** copy of the string `hello` and it leaves `a` intact w
     Passing a `String` (_Heap_) data as argument to a function, and then trying to use that same variable again results in the same `E0382` error. This is because, with the function call the **ownership** of the `String` data has **moved** to the function's parameter (`p: A` in our case).
 
   - **Returning data from a Function**
-
     Returning a value from a function can also transfer **ownership**. If the return value from a function is assigned to a variable, then that variable gets the **ownership** of that data. The lifetime of the data will now be extended beyond the scope of the function. Return can be used to take back **ownership** of data passed to a function. We can modify our previous code snippet to work correctly using this technique-
 
     ```rust
@@ -770,7 +759,6 @@ Here `b` gets a **cloned** copy of the string `hello` and it leaves `a` intact w
         p // returning the parameter value
     }
     ```
-
     Now when we use the variable `a` after passing it to the `show` function it works without giving an error. This is because in this case the function `show` returns the value it received as parameter back to the caller which gets assigned again to the same variable (`a`). However to make this work we had to do quite a bit of jugglery -
 
     - The variable `a` has to be made _mutable_ with the `mut` keyword, so that it can be reassigned with the return from the function `show`.

@@ -612,7 +612,7 @@ _Rust_ provides memory management without a _garbage collector_ (unlike .Net or 
   
   _Note: In C++ this pattern of cleaning up resources at the end of an object's lifetime is called **RAII** or 'Resource Acquisition Is Initialisation'_.  
   
-- **Variable assignment - "Move"**  
+- **Variable assignment - "Move or Copy"**  
   We saw that when the variable that is bound to the data goes out of scope the memory for that data is freed. What happens if there are more than one variable bound to the data? Let us see how this might work with the following setup -
 
   - Assign an `i32` to a variable `a`
@@ -622,6 +622,7 @@ _Rust_ provides memory management without a _garbage collector_ (unlike .Net or 
   - Finally call `show` on the original variable `a` again
 
   ```rust
+  // "copy" semantics
   fn main() {
       let a: i32 = 23;
       // assign 'a' to 'b'
@@ -634,11 +635,12 @@ _Rust_ provides memory management without a _garbage collector_ (unlike .Net or 
   fn show<A: std::fmt::Display>(p: A){
       println!("{}", p);
   }
-  ```
-
-  So far so good, now let us try to do this with a `String` data type instead of `i32` - 
-
+```
+  
+So far so good, now let us try to do this with a `String` data type instead of `i32` - 
+  
   ```rust
+  // "move" semantics
   fn main() {
       let a: String = String::from("hello");
       // assign 'a' to 'b'
@@ -660,20 +662,120 @@ _Rust_ provides memory management without a _garbage collector_ (unlike .Net or 
   ...
   8 |     show(a);    // 23
     |          ^ value used here after move
-  */
+*/
   ```
 
   We get an error, the compiler is panics and and is trying to tell us that we are trying to use the variable `a` after the data has been **moved**, and the "move" occurred at `let b = a`. It goes on to explain that the "move" happened because `String` does not implement the `Copy` trait.
 
   So as we can see the compiler error is quite descriptive and goes it great detail explaining the scenario. This is one of _Rust's_ philosophy and even though it is quite strict it can be a helpful friend.
 
-  So what happened here is that with `String` (unlike the `i32` value) since the data is allocated on the _Heap_ when a new variable points to the same data, the ownership gets transferred to the new variable and the old variable is no longer associated with the data value. s
+  - So what happened here is that with `String` (unlike the `i32` value) since the data is allocated on the _Heap_ when a new variable points to the same data, the ownership gets transferred to the new variable and the old variable is no longer associated with the data value and when we attempt to use the invalidated variable _Rust_ will trow an error.
 
-   
+  - Since there is only one owner (`b` in this case) _Rust_ can make a deterministic `free` of the data it points to in memory when `b` goes out of scope (or end of its lifetime).
+  
+  - In the case of the `i32` it was a simple data type with a fixed size known at compile time and therefore their data is placed on the _Stack_. When we assign it to a new variable _Rust_ makes a **copy** of that data in memory and binds the new variable with that, leaving the old data and variable in tact. When the function call associated with the _Stack_ is complete the _Stack_ frame is removed with all the data in it.
+  - With dynamic data such as `String` we cannot use the _Stack_, they are allocated on the _Heap_. Allocation and deallocation on the _Heap_ is expensive and can become a significant performance bottleneck. _Rust_ does not implicitly create _deep copies_. 
+  - So the approach _Rust_ has taken to memory management on the _Heap_ is to **move** ownership whenever some data on the _Heap_ is assigned to another variable or passed to some function as an argument (in the later case the function parameter gets the **ownership**).
+  - The mechanism that is used the language level is the `Copy` **trait** (a _trait_ is like an interface, we shall learn more about them later). Simple scalar types such as Integer, Float, Double, Boolean, Character and Tuples of these can be placed on the _Stack_, and they have the `Copy` trait. That way when another variable/parameter needs them it gets a copy of the data (similar to _"Pass by Value"_ in _C++_). We can have our custom types implement types implement the `Copy` trait, and then _Rust_ will treat it with the **copy semantics** just like it does for the builtin scalar types. However if our type has the `Drop` trait, then it will not allow us to implement the `Copy` trait on that type. As we have seen `drop` is for cleanup behaviour when the owner goes out of scope. It does not make sense to have both traits.
+  - 
+  
+- **Variable assignment - "Clone"**  
+  If we do want to create a deep copy of the data on the _Heap_, we can do that for objects that support the `clone` method.
 
-- **Variable assignment - "Copy"**  
-  All 
+```rust
+fn main() {
+    let a: String = String::from("hello");
+    // clone 'a' to 'b'
+    let b = a.clone();
+    show(b);    // hello
+    
+    // now show 'a'
+    show(a);    // hello
+}
+```
 
-- **Borrowing**
+Here `b` gets a **cloned** copy of the string `hello` and it leaves `a` intact with individual ownership to the separate data copies in memory. 
 
+- **Function calls and Ownership**  
+  **Ownership** and memory management comes into concern not only during _variable assignment_, the same semantics apply when we invoke functions passing the data around.
+
+  - **Passing data to a Function**
+
+    Passing a variable to a function call as an argument will result in an **ownership move or copy**, depending on the data type (just like assigning to a variable). In this case it is technically an assignment to the function's formal parameter. We can demonstrate that in our code snippet with a small rearrangement -
+
+    ```rust
+    fn main() {
+        let a: i32 = 23;
+        
+        // call a function with 'a' as argument
+        show(a);    // hello
+        
+        // now assign 'a' to 'b'
+        let b = a; // 23
+    }
+    ```
+
+    Passing an `i32` as argument to a function results in a **copy**.
+
+    ```rust
+    fn main() {
+        let a: String = String::from("hello");
+        
+        // calls a function with 'a' as argument
+        show(a);    // hello
+        
+        // now assign 'a' to 'b'
+        let b = a; // Error!
+    }
+    /*
+    error[E0382]: use of moved value: `a`
+     --> src/main.rs:8:13
+      |
+    2 |     let a: String = String::from("hello");
+      |         - move occurs because `a` has type `std::string::String`, which does not implement the `Copy` trait
+    ...
+    5 |     show(a);    // hello
+      |          - value moved here
+    ...
+    8 |     let b = a; // Error!
+      |             ^ value used here after move
+    */
+    ```
+
+    Passing a `String` (_Heap_) data as argument to a function, and then trying to use that same variable again results in the same `E0382` error. This is because, with the function call the **ownership** of the `String` data has **moved** to the function's parameter (`p: A` in our case).
+
+  - **Returning data from a Function**
+
+    Returning a value from a function can also transfer **ownership**. If the return value from a function is assigned to a variable, then that variable gets the **ownership** of that data. The lifetime of the data will now be extended beyond the scope of the function. Return can be used to take back **ownership** of data passed to a function. We can modify our previous code snippet to work correctly using this technique-
+
+    ```rust
+    fn main() {
+        // make the variable mutable
+        let mut a: String = String::from("hello");
+        
+        // calls a function with 'a' as argument
+        // and assign teh return back to the original variable
+        a = show(a);    // hello
+        
+        // now assign 'a' to 'b'
+        let b = a; // now it works!
+    }
+    
+    fn show<A: std::fmt::Display>(p: A) -> A{
+        println!("{}", p);
+        p // returning the parameter value
+    }
+    ```
+
+    Now when we use the variable `a` after passing it to the `show` function it works without giving an error. This is because in this case the function `show` returns the value it received as parameter back to the caller which gets assigned again to the same variable (`a`). However to make this work we had to do quite a bit of jugglery -
+
+    - The variable `a` has to be made _mutable_ with the `mut` keyword, so that it can be reassigned with the return from the function `show`.
+    - We have to make the function invocation into an expression on the _RHS_ of an assignment.
+    - The function `show` itself has to be modified to have a return type (`-> A`).
+    - The value of the parameter `p` has to to be returned from the function (as the last line of the function without a `;`)
+
+    Setting up the code in this way to take back ownership can get complicated, neither is it always practical. Next we shall see better way to do this **References** and **Borrowing**.
+
+- **References**
 - **Slices**
+

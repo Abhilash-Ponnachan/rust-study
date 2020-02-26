@@ -2,7 +2,7 @@
 _Rust_ is a `multi paradigm systems programming language` developed at _Mozilla_ Research and open sourced under _MIT License_ and _Apache License 2.0_.  
 It was originally designed by _Graydon Hoare_ with contributions added on by others including _Brendan Eich_.
 
-It is a language designed with **safety**, **speed**, and **concurrency** as primary importance. It is a _low level langauge_ and doesn't use _Garbage Collection_, however it brings together different programming paradigms such as `procedural`, `object-oriented`, `concurrent actor`, `functional`, and `meta-programming`.
+It is a language designed with **safety**, **speed**, and **concurrency** as primary importance. It is a _low level language_ and doesn't use _Garbage Collection_, however it brings together different programming paradigms such as `procedural`, `object-oriented`, `concurrent actor`, `functional`, and `meta-programming`.
 
 It is a modern language built on `LLVM` backend and influenced by other languages such as `C/C++`, `Lisp`, `Swift`, `Haskell`, `Erlang` to name a few.
 
@@ -20,7 +20,8 @@ This downloads the script file and executes it in the shell. This bootstraps the
 On _Windows_ we can download the **rustup-init.exe**, and from there it basically works the same. It will require the _C++ build tools for VS 2013 or later_ as pre-requisite.
 
 Once complete, the process ends up installing the following components -
-- `rustup` - **installation** and **version managment** tool
+- `rustup` - **installation** and **version management** tool
+  
     - _Rust_ has a rapid development and 6 week release cycle, so this tool is essential to manage the versions
     - To update _Rust_ simply d
     ```bash
@@ -67,7 +68,7 @@ Even though the program we have written is very basic, it introduces some fundam
 Using `fn` we define a _function_ (and in _Rust_ we can write our code in outer functions directly and do not need to wrap them in _classes_ or _objects_ as in _Java_ or _C#_).  
 
 The `main` function is a special function as it is the _Entry Point_ to the program. It is the first function to be executed when we run the compiled binary. This is similar to other languages such as _C_.  
-`main` can take paramters or be empty.
+`main` can take parameters or be empty.
 
 All the work in our code is done by `println!`, which looks like a _function_ but is really a _macro_ (as indicated by the **!** suffix). We shall learn about _macros_ later but in simple words it is a line of code that is expanded in-place by the compiler with the code that does the actual lifting. So it is not a _sub-routine_ call to another _stack_ like a _function_. We will encounter this and more _macros_ as we go further.
 
@@ -93,7 +94,7 @@ _It also creates a `git` repository with a `.gitignore` file if the parent direc
 The tool has created a `Cargo.toml` file and a `src` directory with a `main.rs` source file.
 
 - #### "Cargo.toml"
-This is essntially the project manifest with configuration information about the project and its dependencies, like `package.json` in _NPM_. Unlike _NPM_ though _Cargo_ uses the `TOML` (Tom's Obvious, Minimal Language - By Tom Preston-Werner) syntax instead of `JSON`. This kind of resmbles `INI` files from back in the days, and is essentially a structured list of Key-Value pairs. Our `toml` file would look like - 
+This is essentially the project manifest with configuration information about the project and its dependencies, like `package.json` in _NPM_. Unlike _NPM_ though _Cargo_ uses the `TOML` (Tom's Obvious, Minimal Language - By Tom Preston-Werner) syntax instead of `JSON`. This kind of resembles `INI` files from back in the days, and is essentially a structured list of Key-Value pairs. Our `toml` file would look like - 
 ```toml
 [package]
 name = "hello_cargo"
@@ -125,7 +126,7 @@ $ ./target/debug/hello_cargo
 Hello, world!
 ```
 
-By default it `cargo` will build for _debug_ mode, which means it has debug symbol files and is not optimized. When the project is ready for **release** we can build with the `--release` switch/option and this will do an optimized build for release environments. The comiplation/build time for **release** mode takes longer but the binary is optmized to execute faster. The **release** build would end up in the `./target/release` directory.
+By default it `cargo` will build for _debug_ mode, which means it has debug symbol files and is not optimised. When the project is ready for **release** we can build with the `--release` switch/option and this will do an optimised build for release environments. The compilation/build time for **release** mode takes longer but the binary is optimised to execute faster. The **release** build would end up in the `./target/release` directory.
 
 ### Run with `cargo`
 We can _build_ and _run_ the project in a single command using `run` -
@@ -574,14 +575,14 @@ _Rust_ provides memory management without a _garbage collector_ (unlike .Net or 
         - When the **owner** goes out of **scope** the **value** will be **dropped**
 
         _Note: Rust is "block scoped"_ -
-    
+        
         ```rust
         {
             let x = "Hello"; // x scope starts
             ... // x is valid here
         } // x goes out of scope here
         ```
-        
+    
     In order to illustrate the behaviour of _ownership_ we need a more complex data type than the simple _scalar_ types as they are allocated on the **stack** since they have limited ad predetermined size. _string literals_ will not do either as they are compiled into the binary and have known fixed size.  
     We need a data type that needs _allocation_ on the **heap** such as the **String** type. Unlike _string literals_ the `String` types is able to store a varying amount of text (i.e. it can grow or shrink). Whilst there is a lot to be said of `String`, for our purposes now we shall limit ourselves to aspects that are relevant to memory management.
     
@@ -620,9 +621,11 @@ _Rust_ provides memory management without a _garbage collector_ (unlike .Net or 
   - Assign an `i32` to a variable `a`
   - Re-assign the data to another variable `b`
   - Pass 'b' to a custom function `show` to print it to _std I/O_
+    
     - _there is a reason why we are using this function. It helps simulate ownership transfer situation, as we shall see as we proceed._
-  - Finally call `show` on the original variable `a` again
-
+  
+- Finally call `show` on the original variable `a` again
+  
     ```rust
     // "copy" semantics
     fn main() {
@@ -637,8 +640,8 @@ _Rust_ provides memory management without a _garbage collector_ (unlike .Net or 
     fn show<A: std::fmt::Display>(p: A){
         println!("{}", p);
     }
-    ```
-
+  ```
+  
     So far so good, now let us try to do this with a `String` data type instead of `i32` - 
     ```rust
     // "move" semantics
@@ -665,19 +668,19 @@ _Rust_ provides memory management without a _garbage collector_ (unlike .Net or 
     |          ^ value used here after move
     */
     ```
-    We get an error, the compiler is panics and and is trying to tell us that we are trying to use the variable `a` after the data has been **moved**, and the "move" occurred at `let b = a`. It goes on to explain that the "move" happened because `String` does not implement the `Copy` trait.
-
-    So as we can see the compiler error is quite descriptive and goes it great detail explaining the scenario. This is one of _Rust's_ philosophy and even though it is quite strict it can be a helpful friend.
-
-    - So what happened here is that with `String` (unlike the `i32` value) since the data is allocated on the _Heap_ when a new variable points to the same data, the ownership gets transferred to the new variable and the old variable is no longer associated with the data value and when we attempt to use the invalidated variable _Rust_ will trow an error.
-
-    - Since there is only one owner (`b` in this case) _Rust_ can make a deterministic `free` of the data it points to in memory when `b` goes out of scope (or end of its lifetime).
-
+  We get an error, the compiler is panics and and is trying to tell us that we are trying to use the variable `a` after the data has been **moved**, and the "move" occurred at `let b = a`. It goes on to explain that the "move" happened because `String` does not implement the `Copy` trait.
+  
+  So as we can see the compiler error is quite descriptive and goes it great detail explaining the scenario. This is one of _Rust's_ philosophy and even though it is quite strict it can be a helpful friend.
+  
+  - So what happened here is that with `String` (unlike the `i32` value) since the data is allocated on the _Heap_ when a new variable points to the same data, the ownership gets transferred to the new variable and the old variable is no longer associated with the data value and when we attempt to use the invalidated variable _Rust_ will trow an error.
+  
+  - Since there is only one owner (`b` in this case) _Rust_ can make a deterministic `free` of the data it points to in memory when `b` goes out of scope (or end of its lifetime).
+  
     - In the case of the `i32` it was a simple data type with a fixed size known at compile time and therefore their data is placed on the _Stack_. When we assign it to a new variable _Rust_ makes a **copy** of that data in memory and binds the new variable with that, leaving the old data and variable in tact. When the function call associated with the _Stack_ is complete the _Stack_ frame is removed with all the data in it.
     - With dynamic data such as `String` we cannot use the _Stack_, they are allocated on the _Heap_. Allocation and deallocation on the _Heap_ is expensive and can become a significant performance bottleneck. _Rust_ does not implicitly create _deep copies_. 
     - So the approach _Rust_ has taken to memory management on the _Heap_ is to **move** ownership whenever some data on the _Heap_ is assigned to another variable or passed to some function as an argument (in the later case the function parameter gets the **ownership**).
-    - The mechanism that is used the language level is the `Copy` **trait** (a _trait_ is like an interface, we shall learn more about them later). Simple scalar types such as Integer, Float, Double, Boolean, Character and Tuples of these can be placed on the _Stack_, and they have the `Copy` trait. That way when another variable/parameter needs them it gets a copy of the data (similar to _"Pass by Value"_ in _C++_). We can have our custom types implement types implement the `Copy` trait, and then _Rust_ will treat it with the **copy semantics** just like it does for the builtin scalar types. However if our type has the `Drop` trait, then it will not allow us to implement the `Copy` trait on that type. As we have seen `drop` is for cleanup behaviour when the owner goes out of scope. It does not make sense to have both traits.
-
+  - The mechanism that is used the language level is the `Copy` **trait** (a _trait_ is like an interface, we shall learn more about them later). Simple scalar types such as Integer, Float, Double, Boolean, Character and Tuples of these can be placed on the _Stack_, and they have the `Copy` trait. That way when another variable/parameter needs them it gets a copy of the data (similar to _"Pass by Value"_ in _C++_). We can have our custom types implement types implement the `Copy` trait, and then _Rust_ will treat it with the **copy semantics** just like it does for the builtin scalar types. However if our type has the `Drop` trait, then it will not allow us to implement the `Copy` trait on that type. As we have seen `drop` is for cleanup behaviour when the owner goes out of scope. It does not make sense to have both traits.
+  
 - **Variable assignment - "Clone"**  
     If we do want to create a deep copy of the data on the _Heap_, we can do that for objects that support the `clone` method.
     ```rust
@@ -769,5 +772,236 @@ _Rust_ provides memory management without a _garbage collector_ (unlike .Net or 
     Setting up the code in this way to take back ownership can get complicated, neither is it always practical. Next we shall see better way to do this **References** and **Borrowing**.
 
 - **References**
+
+    The problem with passing our `String` variable as an argument to the `show` function is that when we do that the function parameter `p` gets **ownership** of the data value pointed by the variable. After that if we try to use the 	original variable _Rust_ will complain. So we need a mechanism to pass/assign a variable without transferring **ownership**. This is what **references** allow us to do. We represent a **reference** by prefixing the variable/argument with **`&`**. Let us modify our code listing to work with a **reference** and see how it works -
+
+    ```rust
+    fn main() {
+        let a: String = String::from("hello");
+        
+        // borrow a reference to 'a'
+        show(&a);    // hello
+        
+        // now assign 'a' to 'b'
+        let b = a; // 'a' is still available
+    }
+    
+    fn show<A: std::fmt::Display>(p: &A){
+        // 'p' has a reference to the value
+        // but no ownership
+        println!("{}", p);
+    }
+    ```
+
+    The changes we made are:
+
+    - When we invoke the function we pass in a **reference** to the variable instead of the variable (`show(&a)`)
+    - The function definition itself has a modification in the parameter type, the parameter is defined as a **reference** type (`p: &A`)
+
+    With this change the original variable `a` still retains the **ownership** while the parameter `p` can get a reference to the value that it can use as `read-only`.
+
+    A **reference** unlike **raw pointer** enforces certain rules about referencing/borrowing that help avoid inadvertent mutations to the value. 
+
+    To see this let us try to setup a function that tries to modify our string using a **borrow** - 
+
+    ```rust
+    fn main() {
+        // declare and init a String variable 
+        let a = String::from("Alpha");
+        
+        // pass 'a' as reference to the function
+        change_str(&a); // Error
+        
+        println!("{}", a); 
+        
+        
+    }
+    
+    // specify the parameter as reference to String
+    fn change_str(text: &String){
+        text.push_str(" Beta!");
+    }
+    
+    /*
+    Compiling playground v0.0.1 (/playground)
+    error[E0596]: cannot borrow `*text` as mutable, as it is behind a `&` reference
+      --> src/main.rs:15:5
+       |
+    14 | fn change_str(text: &String){
+       |                     ------- help: consider changing this to be a mutable reference: `&mut std::string::String`
+    15 |     text.push_str(" Beta!");
+       |     ^^^^ `text` is a `&` reference, so the data it refers to cannot be borrowed as mutable
+    */
+    ```
+
+    The compiler complains that the data cannot be borrowed as **"mutable"** because it is behind a **normal reference**.
+
+    If we need to modify a value it is possible to get a **mutable reference**   by prefixing it with the **`mut`** keyword, as shown -
+
+    ```rust
+    fn main() {
+        // declare the variable as mutable
+        let mut a = String::from("Alpha");
+        
+        // borrow 'a' as a 'mutable reference' (&mut)
+        change_str(&mut a);
+        
+        println!("{}", a); // Alpha Beta!
+        
+        
+    }
+    
+    // specify the parameter type as 'mutable reference' (&mut)
+    fn change_str(text: &mut String){
+        text.push_str(" Beta!");
+    }
+    ```
+
+    Now we are able to change the data via the **mutable reference**, and in order to achieve that we had to do a few things explicitly -
+
+    	- Declare the variable `a` as mutable
+    	- Borrow as **mutable reference** using `&mut` when calling the function
+    	- Define the function parameter as **mutable reference** (`&mut String`)
+
+    As we can see trying to do state mutation requires us to make it explicit in the code and at all points that might impact it.
+
+    Even though we can obtain **mutable references** there are certain restrictions imposed that prevent us from resulting in **concurrency errors** (such as **race conditions** and **dead locks**).
+
+    - One restriction is that we can have only one active **mutable reference** at a time in the same scope. For example we could try to get two mutable references as below -
+
+      ```rust
+      fn main() {
+          // declare and init a String variable 
+          let mut a = String::from("Alpha");
+          
+          // get two mutable references
+          let r1 = &mut a;
+          let r2 = &mut a;   
+      }
+      ```
+
+      So far it seems _Rust_ has allowed us to get two **mutable references**, however if we modify the code slightly to try and use the earlier **reference** we will get a compile time error -
+
+      ```rust
+      fn main() {
+          // declare and init a String variable 
+          let mut a = String::from("Alpha");
+          
+          // get two mutable references
+          let r1 = &mut a;
+          let r2 = &mut a;
+          
+          // Try to print (use) 1st refernce
+          println!("r1 = {}", r1); // Error!
+      }
+      /*
+      error[E0499]: cannot borrow `a` as mutable more than once at a time
+        --> src/main.rs:7:14
+         |
+      6  |     let r1 = &mut a;
+         |              ------ first mutable borrow occurs here
+      7  |     let r2 = &mut a;
+         |              ^^^^^^ second mutable borrow occurs here
+      ...
+      10 |     println!("r1 = {}", r1); // Error!
+         |                         -- first borrow later used here
+      */
+      ```
+
+      This way we cannot end up inadvertently modifying the same data from two places.
+
+    - An other restriction is that we cannot have a **mutable reference** while holding active **immutable references**. This make sense as the code that uses the **immutable references** would not expect the data to be modified inadvertently, which could happen if you can have active **mutable reference** at the same time. We can see that _Rust_ will give an error if we try -
+
+      ```rust
+      fn main() {
+          // declare and init a String variable 
+          let mut a = String::from("Alpha");
+          
+          // get an immutable reference 
+          let r1 = &a;
+          
+          // get a mutable reference 
+          let r2 = &mut a;
+          
+          // Try to print (use) 1st refernce
+          println!("r1 = {}", r1); // Error!
+      }
+      /*
+      error[E0502]: cannot borrow `a` as mutable because it is also borrowed as immutable
+        --> src/main.rs:9:14
+         |
+      6  |     let r1 = &a;
+         |              -- immutable borrow occurs here
+      ...
+      9  |     let r2 = &mut a;
+         |              ^^^^^^ mutable borrow occurs here
+      ...
+      12 |     println!("r1 = {}", r1); // Error!
+         |                         -- immutable borrow later used here
+      */
+      ```
+
+    - The third restriction is that **references must be valid**. In languages like _C/C++_ which allow manipulating raw pointers, it is possible to have **dangling pointers**, or pointers to deallocated or invalid memory locations. _Rust_ on the other hand ensure that it does not end up with **dangling pointers/references**, by making sure that the **data** will not go out of scope before the **reference** goes out of scope. It is a simple but effective approach.
+
+      We can try to simulate this with a function that creates a string and returns a **reference** to it -
+
+      ```rust
+      fn main() {
+      
+          let x = dangling_ref();
+          
+          // Try to print 'x'
+          println!("x = {}", x); // Error!
+      }
+      
+      
+      fn dangling_ref() -> &String{
+          // initialize a local string data
+          let s = String::from("Hello");
+          // return reference to it
+          &s
+      }
+      /*
+      rror[E0106]: missing lifetime specifier
+        --> src/main.rs:10:22
+         |
+      10 | fn dangling_ref() -> &String{
+         |                      ^ help: consider giving it a 'static lifetime: `&'static`
+         |
+         = help: this function's return type contains a borrowed value, but there is no value for it to be borrowed from
+      */
+      ```
+
+      The function returns a **borrowed reference** to `s` which is a local variable, bu that goes out of scope once the function is over, so there is nothing to **refer** to for the returned **reference**. _Rust_ preemptively stops us from doing such things.
+
+      If we did want to return a value from the function we can return it as a **value with ownership**, in which case the **ownership** gets transferred to the variable outside the function -
+
+      ```rust
+      fn main() {
+      
+          let x = not_dangling_ref();
+          
+          // Try to print 'x'
+          println!("x = {}", x); // x = Hello
+      }
+      
+      
+      fn not_dangling_ref() -> String{
+          // initialize a local string data
+          let s = String::from("Hello");
+          // return value with ownership
+          s
+      }
+      ```
+
+      Now `x` will have **ownership** of the `String` data `Hello`.
+
+    To summarise the **rules of reference** are:
+
+    - At a given time we can have only **one mutable reference** or any number of **immutable references**. We cannot have more that one **mutable reference** or combine **immutable references** with **mutable** ones.
+    - A **reference** must always point to **valid data**
+
 - **Slices**
+
+    Another form of referencing/data type that does NOT have ownership is **slices**. They come into picture when working with collections. A **slice** is a reference to a **contiguous sequence** within a **collection** rather than the whole collection. 
 

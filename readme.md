@@ -555,7 +555,7 @@ The basic control flow constructs are _conditional branching_ using the `if .. e
     println!("Factorial = {0}", fact);
     // Factorial = 362880
     ```
-### "Ownership" in Rust
+## "Ownership" in Rust
 _Rust_ provides memory management without a _garbage collector_ (unlike .Net or Java). Its **"ownership"** mechanism enables it to be deterministic about variable lifetimes and therefore make **"memory safety guarantees"**.
 
 - **Ownership**  
@@ -910,7 +910,7 @@ _Rust_ provides memory management without a _garbage collector_ (unlike .Net or 
 
       This way we cannot end up inadvertently modifying the same data from two places.
 
-    - An other restriction is that we cannot have a **mutable reference** while holding active **immutable references**. This make sense as the code that uses the **immutable references** would not expect the data to be modified inadvertently, which could happen if you can have active **mutable reference** at the same time. We can see that _Rust_ will give an error if we try -
+    - Another restriction is that we cannot have a **mutable reference** while holding active **immutable references**. This make sense as the code that uses the **immutable references** would not expect the data to be modified inadvertently, which could happen if you can have active **mutable reference** at the same time. We can see that _Rust_ will give an error if we try -
 
       ```rust
       fn main() {
@@ -1003,5 +1003,283 @@ _Rust_ provides memory management without a _garbage collector_ (unlike .Net or 
 
 - **Slices**
 
-    Another form of referencing/data type that does NOT have ownership is **slices**. They come into picture when working with collections. A **slice** is a reference to a **contiguous sequence** within a **collection** rather than the whole collection. 
+    Another form of reference/data type that does NOT have ownership is **slices**. They come into picture when working with collections (especially strings). A **slice** is a reference to a **contiguous range** within a **collection** rather than the whole collection. So whilst a normal _string reference_ (`&String`) is a **reference** to the whole `String` data, a _string slice_ (`&str`) is a **reference** to a specific range of the string data. We can see a few examples of how to specify slices, and how the _range start and end specifiers_ behave (it is very similar to other languages such as `Python`).
+    
+    ```rust
+    fn main() {
+    
+        let s = String::from("Hello World!");
+        
+        // string slice from 0 to 5 chars
+        let s1 = &s[0..5];
+        println!("{:?}", s1);// Hello
+        
+        // starting from 0 can omit 0
+        let s2 = &s[..5];
+        println!("{:?}", s2);// Hello
+        
+        // ending in len can omit the range-end
+        let s3 = &s[6..];
+        println!("{:?}", s3);// World!
+    
+        // range-end specifier is end-index + 1
+        // so to get 6th char to 3 chars after 6th
+        let s4 = &s[6..6+3]; // &s[6..9]
+        println!("{:?}", s4);// Wor
+    }
+    ```
+    
+    Typically when we pass _strings_ or _vectors_ around (or return them from functions), we tend to use **slices**. This way we do not transfer **ownership** and also we get a more _flexible reference_ to the underlying data. Let us look at an example that can return the first word of a string text -
+    
+    ```rust
+    fn main() {
+    
+        let s = String::from("Hello World!");
+        
+        let f = first_word(&s);
+        println!("first word in {} = '{}'", s, f);
+        // first word in Hello World! = 'Hello'
+    
+    }
+    
+    fn first_word(text: &String) -> &str{ // returns string slice
+       // access underlying String bytes
+       let bytes = text.as_bytes();
+       // iterate through the bytes and check for space
+       // destructure iterator item to index=i and ref to item=&byt
+       for (i, &byt) in bytes.iter().enumerate(){
+           if byt == b' ' {
+            // return slice till 'i'
+               return &text[..i]
+           }
+       }
+       
+       // if reached here return full string as slice
+       &text[..]
+    }
+    ```
+    
+    Our function `first_word` returns a **slice** of the `String` passed in. Under the hood this is just a _memory safe pointer_ to part of the `String` data. They follow the same rules of **borrowing** as regular references. So for example if in the above example we tried to modify the original `String` _Rust_ will prevent us -
+    
+    ```rust
+    fn main() {
+    
+        let mut s = String::from("Hello World!");
+        
+        let f = first_word(&s);
+        
+        // try clearing the string here
+        s.clear(); // Error - cannot do mutable borrow
+        
+        println!("first word in {} = '{}'", s, f);
+        // first word in Hello World! = 'Hello'
+    
+    }
+    /*
+    error[E0502]: cannot borrow `s` as mutable because it is also borrowed as immutable
+     --> src/main.rs:7:5
+      |
+    5 |     let f = first_word(&s);
+      |                        -- immutable borrow occurs here
+    6 |     
+    7 |     s.clear();
+      |     ^^^^^^^^^ mutable borrow occurs here
+    8 |     
+    9 |     println!("first word in {} = '{}'", s, f);
+      |                                            - immutable borrow later used here
+    */
+    ```
+    
+    Here we tried to clear(empty) the `String` '`s`' after we returned it to the variable '`f`' (which is an immutable **slice** to the `String` data '`s`'). Further more we are using this **immutable** borrow **slice** '`f`' in the `println!` macro later. If this is allowed, then _Rust_ cannot ensure data integrity (or memory safety). If we are not using '`f`' (the **slice**)  then it is fine and we are allowed to mutate the original `String 's'`.
+    
+    ```rust
+    fn main() {
+    
+        let mut s = String::from("Hello World!");
+        
+        let f = first_word(&s);
+        
+        // try clearing the string here
+        s.clear(); // this works now
+        
+        // we are not refering to 'f' later
+        
+        println!("now the String is '{}'", s); 
+        // now the String is ''
+    }
+    ```
+    
+    Though _Rust_ will give a _warning_ that the "variable 'f' is unused".
+    
+    **Mutable Slices >>** 
+    
+    Like regular **references** , **slices** can also be mutable. In fact we can use a **mutable slice** to examine how it relates to the original collection. If we modify our code example to return a **mutable slice**, we can see that modifying the **slice** modifies the **original String** -
+    
+    ```rust
+    fn main() {
+    
+        let mut s = String::from("Hello World!");
+        
+        let f = first_word(&mut s);
+        println!("The slice 'f' is '{}'", f);
+        //The slice 'f' is 'Hello'
+        
+        // then modify the mutable slice to be uppercase
+        f.make_ascii_uppercase();
+        
+        println!("Now the original String is '{}'", s);
+        // Now the original String is 'HELLO World!'
+    
+    }
+    
+    fn first_word(text: &mut String) -> &mut str{ // returns mutable string slice
+       // access underlying String bytes
+       let bytes = text.as_bytes();
+       // iterate through the bytes and check for space
+       // destructure iterator item to index=i and ref to item=&byt
+       for (i, &byt) in bytes.iter().enumerate(){
+           if byt == b' ' {
+            // return slice till 'i'
+               return &mut text[..i]
+           }
+       }
+       
+       // if reached here return full string as slice
+       &mut text[..]
+    }
+    ```
+    
+    Of course everything is still consistent with the rules of **borrowing**, for example if we tried to do another **mutable borrow** in the same scope we would get an error-
+    
+    ```rust
+    fn main() {
+    
+        let mut s = String::from("Hello World!");
+        
+        let f = first_word(&mut s);
+        println!("The slice 'f' is '{}'", f);
+        //The slice 'f' is 'Hello'
+        
+        // try to get another mutabel slice
+        let g = first_word(&mut s); // Error!
+        
+        // then modify the mutable slice to be uppercase
+        f.make_ascii_uppercase();
+        
+        println!("Now the original String is '{}'", s);
+        // Now the original String is 'HELLO World!'
+    
+    }
+    /*
+    error[E0499]: cannot borrow `s` as mutable more than once at a time
+      --> src/main.rs:9:24
+       |
+    5  |     let f = first_word(&mut s);
+       |                        ------ first mutable borrow occurs here
+    ...
+    9  |     let g = first_word(&mut s);
+       |                        ^^^^^^ second mutable borrow occurs here
+    ...
+    12 |     f.make_ascii_uppercase();
+       |     - first borrow later used here
+    */
+    ```
+    
+    So **slices** give us the flexibility to work with collections/string whilst ensuring memory safety and helping us avoid situations in code that can lead to data related inconsistencies. It is the idiomatic way to work with strings in _Rust_. 
+    
+    **String Literals >>**
+    
+    In fact **string literals** in _Rust_ are accessed as **slices**. For optimisation reasons _Rust_ embeds **string literals** into the binary an **immutable slice** reference to it within the code. 
+    
+    ```rust
+    let a = "This is a string literal";
+    
+    let b = a;
+    ```
+    
+    In the above code snippet the variable '`a`' is of the type `&str` (an **immutable string slice**) and when we assign that variable '`b`', it's type too will be `&str`. Now both the **slices** will point to the same embedded character sequence in the binary (which the underlying memory representation for string literals).
+    
+    This means that in general, experienced _Rust_ developers would use **string slice** instead of **String reference** as parameter/return types. This gives the flexibility to borrow from `String` or _string literals_. We would write our now familiar example as -
+    
+    ```rust
+    fn main() {
+    
+        let s = String::from("Alpha Centauri");
+        
+        let f = first_word(&s);// takes String
+        println!("{}", f);
+        // Alpha
+        
+        let g = first_word("Beta Centauri"); // takes string literal
+        println!("{}", g);
+        // Beta
+    }
+    
+    // accept &str
+    fn first_word(text: &str) -> &str{ // returns string slice
+       // access underlying String bytes
+       let bytes = text.as_bytes();
+       // iterate through the bytes and check for space
+       // destructure iterator item to index=i and ref to item=&byt
+       for (i, &byt) in bytes.iter().enumerate(){
+           if byt == b' ' {
+            // return slice till 'i'
+               return &text[..i]
+           }
+       }
+       
+       // if reached here return full string as slice
+       &text[..]
+    }
+    ```
+    
+    **Slices to other Data-Types >>**
+    
+    Whilst **slices** are very natural for `String` data, we can have **slices** to any data-type in general. If we wish to refer to/deal with part of an integer vector we could have a **slice** to that -
+    
+    ```rust
+     // an array of numbers (i32)
+    let nums = [3, 2, 4, 1, 6, 5, 9];
+    
+    // a slice of the i32 array or (&[i32])
+    let sn = &nums[..3];
+    println!("{:?}", sn); // [3, 2, 4]
+    ```
+    
+    Here the type of the variable '`sn`' is **`&[i32]`**. This the general type representation for a **slice**. Even for a **string slice** the representation of **`&str`** is just syntactic sugar for **`&[string]`**.
+    
+    If we wanted to write a function to take an integer array and return the sum, we would do something like -
+    
+    ```rust
+    fn main() {
+        
+        // an array of numbers (i32)
+        let nums = [3, 2, 4, 1, 6, 5, 9];
+        
+        // sum of whole array
+        let t1 = sum_nums(&nums[..]);
+        println!("Sum = {}", t1); // Sum = 30
+        
+        // sum of half the array
+        let t2 = sum_nums(&nums[..nums.len()/2]);
+        println!("Sum = {}", t2); // Sum = 9
+    }
+    
+    // fn accepts a slice of an array of i32
+    fn sum_nums(ns: &[i32]) -> i32{
+        let mut s = 0;
+        for i in ns{
+            s += i;
+        }
+        s
+    }
+    ```
+    
+    Since our function accepts a **slice** of `i32` array, we can pass in parts of the original array/vector. In the same way we can have **slice** to collections of any any other data-types (even user defined data types).
+    
+    With a good understanding of **memory handling**, **references**, **borrowing**, and **slices** we are now set to explore other custom data-types.
+
+## Custom Data-Types
+
+In _Rust_ **Structs** and **Enums** are the building blocks for creating our own "custom-types" in our program domain.
 

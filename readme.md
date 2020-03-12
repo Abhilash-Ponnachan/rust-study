@@ -1277,7 +1277,55 @@ _Rust_ provides memory management without a _garbage collector_ (unlike .Net or 
     
     Since our function accepts a **slice** of `i32` array, we can pass in parts of the original array/vector. In the same way we can have **slice** to collections of any any other data-types (even user defined data types).
     
-    With a good understanding of **memory handling**, **references**, **borrowing**, and **slices** we are now set to explore other custom data-types.
+    With a good understanding of **memory handling**, **references**, **borrowing**, and **slices** we can try to write a nontrivial piece of code, by implementing an _in-place quicksort algorithm_  -
+    
+    ```rust
+    fn main() {
+        
+        // an array of numbers (i32)
+        let mut nums = [3, 2, 4, 1, 6, 5, 9];
+        //let mut nums = [2, 4, 6, 3, 1, 5];
+        //let mut nums = [2, 1];
+        
+        // call 'qsort' with a mutable reference
+        qsort(&mut nums);
+        println!("{:?}", nums);
+        // sorted array 
+    }
+    
+    // in-place quicksort, takes a mutable slice of i32
+    fn qsort(ns: &mut [i32]){
+        let l = ns.len();
+        if l > 1{
+            let mut pi = 0; // find pivot
+            let mut si = pi + 1;
+            while si < l {
+                // scan from pivot and find smaller elements
+                if ns[si] < ns[pi]{
+                    let t = ns[si];
+                    let mut j = si;
+                    // shift from pivot right by 1
+                    while j > pi{
+                        ns[j] = ns[j-1];
+                        j -= 1;
+                    }
+                    // swap smaller to pivot
+                    ns[pi] = t;
+                    pi += 1;
+                }
+                si += 1;
+            }
+            // recursive quicksort left and right of pivot
+            qsort(&mut ns[..pi]); // qsort the left (smaller) side
+            qsort(&mut ns[pi+1..]); // qsort the right (greater) side
+        }
+    }
+    
+    ```
+    
+    The algorithm itself is just a standard _quick-sort_ algorithm using recursive calls, however the interesting thing from a _Rust_ perspective is how we declare the parameter as a **mutable slice** (`&mut i32`) and we make **mutable borrows**.
+    
+    Next set to explore how to define and operate with custom data-types.
 
 ## Custom Data-Types
 

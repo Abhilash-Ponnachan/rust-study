@@ -1329,5 +1329,169 @@ _Rust_ provides memory management without a _garbage collector_ (unlike .Net or 
 
 ## Custom Data-Types
 
-In _Rust_ **Structs** and **Enums** are the building blocks for creating our own "custom-types" in our program domain.
+In _Rust_ **Structs** and **Enums** are the building blocks for creating our own "custom-types" in our program domain. They are respectively the **product** and **sum** _algebraic data types (ADTs)_ in _Rust_.
 
+### Structs
+
+A **struct** (or **structure**) is a data-type that allows us to package together multiple data elements together into one named type. An instance of a **struct** will be a composite of **"all"** its individual elements (or members) - I.e. it is a **product data-type**. _(the cardinality of a **struct** type will be the product of the cardinality of all its member types)_. **Structs** is a familiar programming concept in other classical language such as _Pascal_ and _C_.
+
+Another **product type** we have already seen is the **tuple** type. Unlike a **tuple** though the members of a **struct** and defined and accessed with _associative names_ and not their position. This makes **structs** more flexible and natural to model domain types.
+
+#### Defining Structs
+
+We can define a **struct** using the `struct` keyword followed by the _name_ and then its members with data types separated by commas -
+
+```rust
+struct User{
+    user_id: String,
+    email_id: String,
+    logged_in: bool
+}
+```
+
+Here we have defined a **structure** to represent a `User`. _Note: how the members/fields of the structure have names with 'Snake_Case', this is the recommended style in Rust and in fact the compiler will give us a warning if we don't follow it._
+
+#### Instantiating Structs
+
+When we need instances of the **struct** we can create them using the **name** of the **struct** followed by the fields and concrete values for each _(Note that there is no `new` keyword like we use for classes in say C++/C#/Java. In that regard this is more similar to Kotlin in syntax)._ Also note that the actual order of the fields does not matter -
+
+```rust
+let u1 = User{
+    email_id: String::from("albert.einstein@acme.com"),
+    logged_in: false,
+    user_id: String::from("R1002")
+};
+```
+
+Note how the syntax for instantiating a **struct** is very similar to defining it (we even use the `:` to separate the name and the value). We simply specify the **value** instead of the **type** of the field.
+
+> Note how in the **struct** `User` we specify the type of the fields `email_id` and `user_id` as owned type `String` instead of the slice type `&str`. This is because the instance of the **struct** should **"own all its data"** and for that data to be valid for as long as the **struct instance** is valid.
+>
+> It is possible to use **references** and **slices** as field types, but that will need the use of _**lifetime specifiers**_ that can ensure that the data referenced is valid as long as the **struct instance** is valid.
+>
+> We shall revisit this once we learn about **lifetime** later.
+
+#### Accessing Members
+
+We access **struct fields** using the "dot notation" (`<instance_name>.<field_name>`) syntax just like most other languages.
+
+```rust
+let u1 = User{
+    email_id: String::from("albert.einstein@acme.com"),
+    logged_in: false,
+    user_id: String::from("R1002")
+};
+// access 'u1' fields using '.'
+println!("User {} is {}loggedin.", u1.user_id, if !u1.logged_in {"Not "} else {""});
+// User R1002 is Not loggedin.
+```
+
+#### Mutable Structs
+
+If we want to change the value of a field after it is crated we can do that by making the **struct** _**mutable**_. Note that we can only make the whole **struct** mutable (or not), we cannot make individual fields mutable (which makes sense if we want deterministic control on that behaviour) -
+
+```rust
+let mut u1 = User{
+    email_id: String::from("albert.einstein@acme.com"),
+    logged_in: false,
+    user_id: String::from("R1002")
+};
+// change the 'logged_in' status
+u1.logged_in = true;
+println!("User {} is {}loggedin.", u1.user_id, if !u1.logged_in {"Not "} else {""});
+// User R1002 is loggedin.
+```
+
+Now we have a **mutable struct** and we can change the value of `logged_in` to `true`.
+
+#### Field Init Shorthand Syntax
+
+Specifying the name and the value for each field can get quite verbose and tedious. Luckily _Rust_ provides a shortcut syntax to specify the fields using variables(or function parameters) directly as long as the variable/parameter identifiers have the same name as the fields -
+
+```rust
+// varibales have same name as struct feilds
+let email_id = String::from("albert.einstein@acme.com");
+let user_id = String::from("R1002");
+let logged_in = false;
+
+let mut u1 = User{
+    email_id,
+    logged_in,
+    user_id
+};
+```
+
+This is especially handy with functions that create **structs** with passed in values -
+
+```rust
+fn main() {
+	// call function to get User instance
+    let mut u1 = get_user(String::from("albert.einstein@acme.com")
+                        , String::from("R1002"));
+    
+    u1.logged_in = true;
+    println!("User {} is {}loggedin.", u1.user_id, if !u1.logged_in {"Not "} else {""});
+    // User R1002 is loggedin.
+}
+
+// function parameters have same name as struct feilds
+fn get_user(email_id: String, user_id: String) -> User{
+    User{
+        email_id,
+        user_id,
+        // we can even combine with explicit field name 
+        logged_in: false
+    }
+}
+```
+
+#### Struct Update Syntax - Instances from other Instances
+
+If we want to create a **struct** instance using values of another instance we might try something like -
+
+```Rust
+fn main() {
+    // declare first istance c1 of car
+    let c1 = Car{
+                make: String::from("Ford"),
+                plate: String::from("CA 2341"),
+                year: 2014
+            };
+    
+    // create c2 with values of c1
+    let c2 = Car{
+        		// use c1 values individually
+                make: c1.make,
+                year: c1.year,
+                plate: String::from("TX G023"),
+            };   
+}
+// struct for car
+struct Car{
+    make: String,
+    plate: String,
+    year: u16
+}
+
+```
+
+Again _Rust_ provides some syntactic sugar to make this type of declarations easier (using the **struct update syntax** `..`) -
+
+```rust
+fn main() {
+    let c1 = Car{
+                make: String::from("Ford"),
+                plate: String::from("CA 2341"),
+                year: 2014
+            };
+    
+    // create c2 with values of c1
+    let c2 = Car{
+                plate: String::from("TX G023"),
+                // copy remianing values from c1
+                ..c1
+            };
+}
+```
+
+Now all fields that are not explicitly specified will be copied over from `c1.` Note that the **struct update syntax** construct (`..c1` in our case) should come at the **end** of the instance declaration. If we put `..c1` anywhere else in the middle of at the beginning it will not compile.

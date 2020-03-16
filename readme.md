@@ -1495,3 +1495,147 @@ fn main() {
 ```
 
 Now all fields that are not explicitly specified will be copied over from `c1.` Note that the **struct update syntax** construct (`..c1` in our case) should come at the **end** of the instance declaration. If we put `..c1` anywhere else in the middle of at the beginning it will not compile.
+
+#### Tuple Structs
+
+_Rust_ provides something called **tuple structs**, which is something between a **struct** and a **tuple**. We can define a **struct** with the body of a **tuple**, i.e. the members/fields are not named. The syntax uses the `struct` keyword but the body looks like that of a **tuple** 
+
+```rust
+// define tupple structs
+struct Colour(u16, u16, u16);
+struct Point(u16, u16, u16);
+// Colour and Point have same shape
+
+// declare x is of the type 'Point'
+let x: Point;
+
+// instantiate a tuple struct 'Point'
+x = Point(101, 203, 132);
+```
+
+However if we try to assign a `Colour` to the variable `x` it will not compile -
+
+```rust
+// instantiate a tuple struct 'Colour' to variable 'x'
+x = Colour(101, 203, 132);
+/*
+error[E0308]: mismatched types
+  --> src/main.rs:12:9
+   |
+12 |     x = Colour(101, 203, 132);
+   |         ^^^^^^^^^^^^^^^^^^^^^ expected struct `main::Point`, found struct `main::Colour`
+*/
+```
+
+To access the elements we can use the same **`.<index>`** or **destructuring** just like with normal **tuples**.
+
+```rust
+// define tupple structs
+struct Point(u16, u16, u16);
+
+// instantiate a tuple struct 'Point'
+let x = Point(101, 203, 132);
+
+// access tuple struct field with '.'
+println!("the 'x' axis = {}", x.0);
+
+// destructuring to access fields
+let Point(_, y, _) = x; // Note the struct type quialifier on the LHS
+println!("the 'y' axis = {}", y);
+```
+
+Note that when **destructuring** a **tuple struct** we have to prefix the **left hand side** with the type of the **struct**. In this case we use `let Point(_, y, _) = x`. If we do not specify the **struct** type on the left, then _Rust_ will give an error stating that we cannot assign a **struct** to a **tuple**.
+
+#### Unit-Like Structs
+
+We can define **structs** without any  fields (called unit-like structs). These are similar to `()`, the **`unit`** type. The reason why we might need them is when we wish to implement a type for some **trait**, bu the type itself does not need to store any data within it (sort of like _static types_ implementing an interface in some OOP languages). We shall see example of this later when we cover **`traits`**.
+
+#### An Example of using Structs
+
+Let us progress through a simple example of working with **structs** and see how it introduces the need of other related concepts -
+
+```rust
+struct Rect{
+    width: u32,
+    height: u32
+};
+
+let a = Rect{
+    width: 120,
+    height: 90
+};
+```
+
+We have a **struct** `Rect` that represents a rectangle and then we declare a variable `a` of the type `Rect`. Now suppose we need a function that calculates the area of the rectangle we could do something like -
+
+```rust
+// define a function that borrows a 'Rect' and returns the area
+fn area(rect: &Rect) -> u32{
+    rect.width * rect.height
+}
+
+// invoke the function to get the area
+println!("Area is {}", area(&a));
+// Area is 10800
+```
+
+So we used the function to calculate the area and print it. Now let us try to print the "`Rect`" instance itself-
+
+```rust
+// try prining the rectangle -default formatter
+println!("Rect is {}", a); // error
+/*
+error[E0277]: `main::Rect` doesn't implement `std::fmt::Display`
+  --> src/main.rs:20:28
+   |
+20 |     println!("Rect is {}", a);
+   |                            ^ `main::Rect` cannot be formatted with the default formatter
+   ....
+*/
+
+// try debug formatter
+println!("Rect is {:?}", a); // error
+/*
+error[E0277]: `main::Rect` doesn't implement `std::fmt::Debug`
+  --> src/main.rs:20:30
+   |
+20 |     println!("Rect is {:?}", a);
+   |                              ^ `main::Rect` cannot be formatted using `{:?}`
+   |
+   = help: the trait `std::fmt::Debug` is not implemented for `main::Rect`
+   = note: add `#[derive(Debug)]` or manually implement `std::fmt::Debug`
+   = note: required by `std::fmt::Debug::fmt`
+*/
+```
+
+What _Rust_ is complaining about is the fact that it does not know how to display our **struct**. The `println!` macro relies on methods of underlying traits that the type has to implement in order to display it. In this case it is saying that our type `Rect` does not implement the `std::fmt::Display` trait or the `std::fmt::Debug` trait. This is kind of like `toString()` method in languages like _Java, C#_ etc. One way to work around this is to let _Rust_ inject this trait for us (it can do this for simple types), by using the **"compiler pragma"** **`#[derive(Debug)]`**. Now _Rust_ does the work of implementing the trait for us (this is very similar to **`deriving (Show)`** in _Haskell_ to implement the `Show` typeclass).
+
+```rust
+// compiler pragma to derive 'Debug' trait
+#[derive(Debug)]
+struct Rect{
+    width: u32,
+    height: u32
+};
+
+let a = Rect{
+    width: 120,
+    height: 90
+};
+
+// try prining the rectangle
+println!("Rect is {:?}", a);
+// Rect is Rect { width: 120, height: 90 }
+```
+
+Now we can use the debug formatter `{:?}` to print the rectangle, of course if we want to display it differently then we have to do our own custom implementation (which we will see later when we learn **traits**).
+
+#### Method Syntax
+
+<todo>
+
+#### Associated Functions
+
+We can
+
+<todo>

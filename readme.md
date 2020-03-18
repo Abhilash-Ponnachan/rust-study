@@ -1632,10 +1632,113 @@ Now we can use the debug formatter `{:?}` to print the rectangle, of course if w
 
 #### Method Syntax
 
-<todo>
+Methods in _Rust_ are just like in other OOP languages, they are functions that belong to an instance of a type (a **struct**, **enum** or **trait** in the case of _Rust_). They are defined within the context of the type and have access to its member data and other methods. The first parameter in a method is **`self`** (or typically a reference to it). This is just like **`this`** being the first parameter of methods in most languages, though the syntax implicitly handles that in many of them. In _Rust_ we have to explicitly declare **`self`** (or its reference) as the **first parameter**, we can then use it within the method body to refer to instance that the method was invoked on. 
+
+We can modify our example code to implement the `area` function as a method -
+
+```rust
+fn main() {
+    #[derive(Debug)]
+    struct Rect{
+        width: u32,
+        height: u32
+    };
+    
+    // implementation section for 'Rect`
+    impl Rect{
+        // method takes '&self' as first param
+        fn area(&self) -> u32{
+            // access instance data using 'self'
+            self.width * self.height
+        }
+    }
+
+    let a = Rect{
+        width: 120,
+        height: 90
+    };
+    
+    // call 'area()'with method syntax
+    println!("Area is {:?}", a.area());
+    // Area is 10800
+}
+```
+
+The things to note here are:
+
+- The method/s of the **struct** are defined in an implementation section (**`impl`**). _This might look familiar to people who have worked with "Pascal" language which has separate `interface` and `implementation` sections_. _Rust_ allows us to have multiple implementation blocks for the same type. There is no reason to do it in this example, bu the syntax supports this. It has it uses when we work with **generics** and **traits** which we shall see later.
+- The method is defined within the **`impl`** section just like we write a function, with the difference that the first parameter is a reference to the instance that the method is invoked on (**`&self`**) .
+  - Note that we do not have to specify the type of the parameter here as that is implied within the **`impl`** section for `Rect`.
+  - Here we used an **immutable borrow** of self for the first parameter (**`&self`**), this is because we just want to read the instance values. This parameter can take **ownership** (**`self`**) or be a **mutable borrow** (**`&mut self`**). We might use the **mutable borrow** if we wish to modify the value of the instance. Take **ownership** of self from the caller would be very rare. 
+- Within the method we use the **`self.<member>`** syntax to access the data/members of the instance. This is just like using **`this`** in _Java, C#_ etc.
+  - In _Rust_ we access members of a reference/pointer directly with the **"`.`"** operator, unlike in _C/C++_ where we have to use **"`->`"** operator. _Rust_ automatically does the **dereferencing** behind the scene for us based on the context.
+- When we want to invoke the method we just use the familiar **"`.`"** syntax (`a.area()`). The method `area()` will be invoked passing in `&a` as the first argument.
+
+#### Additional Parameters
+
+When we have additional parameters we simply specify them as we would with a normal function, but after the first (**`self`**) parameter -
+
+```rust
+// implementation section for 'Rect`
+impl Rect{
+    // method takes '&self' as first param
+    fn area(&self) -> u32{
+        // access instance data using 'self'
+        self.width * self.height
+    }
+	// method takes another Rect as a param
+    fn can_hold(&self, other: &Rect) -> bool{
+        other.width <= self.width && other.height <= self.height
+    }
+}
+
+let a = Rect{
+    width: 120,
+    height: 90
+};
+
+let b = Rect{
+    width: 120,
+    height: 85
+};
+
+// call method passing in explicit arguent `&b`
+println!("'a' can contain 'b' is {}", a.can_hold(&b));
+// 'a' can contain 'b' is true
+```
 
 #### Associated Functions
 
-We can
+We can use implementation section (**`impl`**) to define functions that are not "methods", i.e. they do not have an implicit **`self`** parameter, and access to an instance. We have used a few of these functions by now such as `string::from`. This tells us that the `from()` function here is associated with the `string` type, but not with any particular instance of `string`. In fact they are typically used to create instances of the **struct** (_factory functions_) . _Associated Functions_ are like _Static Methods_ in traditional OOP languages like _Java & C#_.
 
-<todo>
+In our example we can define an _associated function_ to create a "square" -
+
+```rust
+// implementation section for 'Rect`
+impl Rect{
+    // method takes '&self' as first param
+    fn area(&self) -> u32{
+        // access instance data using 'self'
+        self.width * self.height
+    }
+    
+    // assocaited function - create square
+    fn square(side: u32) -> Rect{
+        Rect{
+            width: side,
+            height: side
+        }
+    }
+}
+//...
+// get a square using the assocaited function in Rect
+let s = Rect::square(78);
+println!("Area of {:?} is {}", s, s.area());
+// Area of Rect { width: 78, height: 78 } is 6084
+```
+
+We specified an _associated function_ (`square`) within the **`impl`** section of `Rect` and then we invoked it using `Rect::square()`. We use the scope resolution operator `::` to access the _associated function_ because it is _"namespaced"_ by the **struct**.
+
+### Enums
+
+**Enums** allow us to define types by _enumerating_ its _"variants"_. It is the **"sum" algebraic data type** in _Rust_ (semantically similar to other functional languages such as _F#_ and _Haskell_).

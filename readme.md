@@ -1741,4 +1741,40 @@ We specified an _associated function_ (`square`) within the **`impl`** section o
 
 ### Enums
 
-**Enums** allow us to define types by _enumerating_ its _"variants"_. It is the **"sum" algebraic data type** in _Rust_ (semantically similar to other functional languages such as _F#_ and _Haskell_).
+**Enums** allow us to define types by _enumerating_ its _"variants"_. It is the **"sum" algebraic data type (ADT)** in _Rust_ (semantically similar to other functional languages such as _F#_ and _Haskell_).
+
+#### Defining and using Enums
+
+When we want to define a type that can express _"variations"_  of a common type, a **sum type** is an ideal choice in languages that support **ADT**. In traditional OOP languages we might use more heavy weight constructs such as **interfaces** or **inheritance** to define a family of classes. Languages that support **ADT** provide a leaner and more natural seeming construct with the **"sum type"**. _FP_ languages use this pervasively - a few examples in _Haskell_ -
+
+```haskell
+data Bool = False | True
+-- Bool can have values False or True (its variants)
+
+data Either a b = Left a | Right b
+-- Either has Left of type parameter 'a' or Right of type parameter 'b'
+
+data DivisionResult = DivisionByZero | Success Double
+-- DivisonResult can be DivisionByZero or Success with the result
+
+```
+
+In such languages we rely heavily on **pattern matching** and **destructuring** to disambiguate and access the variants. In this regard _Rust_ is very similar.
+
+let us take a look at how to define an **enum** in _Rust_ using an example of _"IP address"_ which can be _"IPv4"_ or _"IPv6"_ (its variants). 
+
+```rust
+enum IpAddress{
+        IpV4,
+        IpV6
+    };
+```
+
+We can define one using the **`enum`** keyword followed by the _variants_ within the body (curly braces).
+
+#### The "Option" enum
+
+#### Pattern Matching with enums
+
+#### The "`if let`" construct with enums
+

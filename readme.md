@@ -1770,11 +1770,142 @@ enum IpAddress{
     };
 ```
 
-We can define one using the **`enum`** keyword followed by the _variants_ within the body (curly braces).
+We can define one using the **`enum`** keyword followed by the _variants_ within the body (curly braces). We can now declare variables of `IpAddress` and create instances of it -
+
+```rust
+let ip IpAddress;
+ip1 = Address::IpV4; // use :: for enum variant
+
+let ip2 = IpAddress::IpV6; // use :: for enum variant
+```
+
+This gives us the ability to specify different types of IP addresses but the address itself, i.e. it does not specify any data. In _Rust_ we can specify **data members** for each of the **enum variants**. In this case we could do something like -
+
+```rust
+enum IpAddress{
+    IpV4(u8, u8, u8, u8), // data/shape of IpV4 variant
+    IpV6(String) // data/shape of IpV6 variant
+};
+
+// IpV4 octets as numbers
+let home = IpAddress::IpV4(127, 0, 0, 1);
+
+// IpV6 as string
+let loopback = IpAddress::IpV6(String::from("::1"));
+```
+
+We can pass these variables to functions that take the **enum** as parameter -
+
+```rust
+fn main() {
+    
+    // IpV4 octets as numbers
+    let home = IpAddress::IpV4(127, 0, 0, 1);
+    
+    // IpV6 as string
+    let loopback = IpAddress::IpV6(String::from("::1"));
+    
+    ping(home); // ping IpV4
+    // packets received at IpV4(127, 0, 0, 1)
+    
+    ping(loopback); // ping IpV6
+    // packets received at IpV6("::1")
+}
+
+#[derive(Debug)]
+enum IpAddress{
+        IpV4(u8, u8, u8, u8),
+        IpV6(String)
+    }
+
+fn ping(host: IpAddress){
+    println!("packets received at {:?}", host);
+}
+```
+
+As we can see, this is a powerful concept. It allows us to specify whole family of related types with a simple construct. In fact the _Rust standard library_ uses **enums** (along with **structs**) to define builtin types for IP address -
+
+```rust
+// struct to describe IPv4 address feilds
+struct Ipv4Addr{
+    //----
+}
+// struct to describe IPv6 address feilds
+struct Ipv6Addr{
+    //----
+}
+// IpAddr  as enum of struct variants
+enum IpAddr{
+    V4(Ipv4Addr),
+    V6(Ipv6Addr)
+}
+```
+
+**Enums** can contain any type of data - strings, numeric types, structs or even other enums. It is quite a flexible and powerful **ADT** for describing our domain types.
+
+```rust
+enum Message{
+    Quit, // no associated data
+    Move {x: i32, y: i32}, // anonymous struct
+    Write(String), // tuple struct
+    ChangeColor(u16, u16, u16) // tuple struct
+    
+}
+```
+
+#### Methods and Associated functions
+
+Just like **structs** we can define **methods** and **associated functions** for **enums** in the **`impl`** section.
+
+```rust
+impl Message{
+    // method to call a message
+    fn call(&self){
+        // do something with &self data
+    }
+    
+    // associated function to raise a quit message
+    fn raise_quit() -> Message{
+        Message::Quit
+    }
+}
+```
 
 #### The "Option" enum
 
+One builtin **enum** that we will encounter pervasively in _Rust_ would be the **`Option`** enum. As a conscious decision, _Rust_ dose not have a **"`null`"** type, like most other languages. Whilst the concept of **`null`** to indicate the absence of a value is good, the implementation in the mainstream languages leads to many areas of potential bugs. The main reason is that the handling of values that can be **`null`** (the **"`null check`"**) is left to the developer to explicitly cater to in code. Furthermore when this possible absence of value is not described in the type, they cannot be guarded for at compile time. 
+
+The **`Option`** enum in _Rust_ encapsulates the notion of a type that can have some value or have nothing. This is exactly like the **`Maybe`** monad in _Haskell_ or _TypeScript_. The _standard library_ defines it as -
+
+```rust
+enum Option<T>{
+    Some(T),
+    None
+}
+```
+
+This defines **`Option`** as an **enum** with a _generic type parameter_ **`T`** and having two _variants_, **`Some`** that can hold a value of type **`T`** Or a **`None`** which indicates the absence of any value.
+
+The **`Option`** type is so common that it is included wit the prelude, we do not have to explicitly bring it into scope. Additionally the _variants_ **`Some`** and **`None`** can be used directly without having to qualify it with the **enum** all the time.
+
+```Rust
+let a = Some(23);
+let b = Some(String::from("Hello"));
+let c: Option<i32> = None;
+let d = None::<i32>;
+
+println!("a = {:?}", a); // a = Some(23)
+println!("b = {:?}", b); // b = Some("Helo")
+println!("c = {:?}", c); // c = None
+println!("d = {:?}", d); // d = None
+```
+
+- In the case of `a` and `b` variables which has a **`Some`**, we can directly specify the value and the _type parameter_ `T` is inferred from the value.
+- In the case of `c` and `d` which is a **`None`** we have to explicitly specify the _type parameter_ somewhere, for `c` it is the type specification and for `d` it uses the **"turbo fish operator"** (**`::<i32>`**)
+
 #### Pattern Matching with enums
+
+After we define and declare our **enums,** we need some way to access the value within. This is what **pattern matching** can help us with.
 
 #### The "`if let`" construct with enums
 

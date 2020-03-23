@@ -1905,7 +1905,305 @@ println!("d = {:?}", d); // d = None
 
 #### Pattern Matching with enums
 
-After we define and declare our **enums,** we need some way to access the value within. This is what **pattern matching** can help us with.
+After we define and declare our **enums,** we need some way to access the value within. This is what **pattern matching** can help us with. The **`match`** expression is a control flow construct which when used with **enums** can "match" a _branch_ of code to execute depending on the _variant,_ an also "bind" a variable to the data inside the _variant_ which can then be used in the code branch. 
+
+Let us use an example to understand the syntax and capabilities of **`match`** when working with **enums** -
+
+```rust
+fn main() {
+    
+    // enum to represent network Protocol Data Unit
+    enum PDU{
+        Data,
+        Segments,
+        Packets,
+        Frames,
+        Bits
+    }
+    
+    // fn takes a pdu and prints nw layer
+    fn get_nw_layer(pdu: &PDU){
+        let nw_layer: &str;
+        // match statement branching code based on PDU variant
+        match pdu{
+            PDU::Data => nw_layer = "Application",
+            PDU::Segments => nw_layer = "Transport",
+            PDU::Packets => nw_layer = "Internet",
+            PDU::Frames => nw_layer = "Data Link",
+            PDU::Bits => nw_layer = "Physical"
+        }
+        println!("{}", nw_layer);
+    }
+    
+    // instantiate a PDU
+    let du = PDU::Packets;
+    
+    get_nw_layer(&du);
+    // Internet
+}
+```
+
+In this example we have used **`match`** like a **`switch case`** statement to branch based on which _variant_ of the **enum** (`PDU`) it is. Accordingly it sets a variable with the respective **string literal**, which then gets printed.
+
+Since **`match`** is an expression in _Rust_ (like in _Haskell_), we can (and should) write it as -
+
+```rust
+// fn takes a pdu and prints nw layer
+fn get_nw_layer(pdu: &PDU){
+    // match expression branching code based on PDU variant
+    let nw_layer = match pdu{
+        PDU::Data => "Application",
+        PDU::Segments => "Transport",
+        PDU::Packets => "Internet",
+        PDU::Frames => "Data Link",
+        PDU::Bits => "Physical"
+    };
+    println!("{}", nw_layer);
+}
+```
+
+**`match`** expression returns a value that gets assigned to the variable directly. 
+
+We can make the code _cleaner_ by just returning the application layer value as a string literal and print it outside the function. This way it becomes a  _"pure function"_.
+
+```rust
+// fn takes a pdu and returns a nw layer
+fn get_nw_layer(pdu: &PDU) -> &str{
+    match pdu{
+        PDU::Data => "Application",
+        PDU::Segments => "Transport",
+        PDU::Packets => "Internet",
+        PDU::Frames => "Data Link",
+        PDU::Bits => "Physical"
+    }
+}
+
+// instantiate a PDU
+let du = PDU::Packets;
+
+println!("{}", get_nw_layer(&du));
+// Internet
+```
+
+Now let us look at how to access and work with the data within the **enum variants** - 
+
+```rust
+fn main() {
+    // enum to represent shape
+    #[derive(Debug)]
+    enum Shape{
+        Triangle {b: u32, h: u32},
+        Rectangle {l: u32, b:u32},
+        Square {s: u32},
+        Circle {r: u32}
+    }
+    
+    fn area(shp: &Shape) -> f32{
+        match shp {
+            // match to Traingle and bind to variables 'b' & 'h'
+            Shape::Triangle{b, h}=> 0.5 * (*b as f32) * (*h as f32),
+            // match to Rectangle and bind to variables 'l' & 'b'
+            Shape::Rectangle{l, b}=> (*l as f32) * (*b as f32),
+            // match to Square and bind to variable 's'
+            Shape::Square{s}=> (*s as f32) * (*s as f32),
+            // catch all
+            _ => 0.0
+        }
+    }
+    
+    let s1 = Shape::Triangle{b: 51, h: 43};
+    
+    println!("area of {:?} is {}", s1, area(&s1));
+    // area of Triangle { b: 51, h: 43 } is 1096.5
+}
+
+```
+
+Here we have an **enum** of different shapes and function that takes a reference to a shape and calculates the area. In the `area` function we use a **`match`** expression to find a _variant_ that the `shp`  parameter matches with and, also **bind** the _match variables_ with the _data_ of the _variant_. 
+
+- `Shape::Triangle{b, h}` - The data of the parameter `shp` is bound to the variables "`b`" and "`h`", which can then be used in the body of the expression branch.
+
+- One thing to note with **structs** is that the **variable names** that we bind in the **match** has to be same as the **field names** in the **struct definition**. So we will get an error if we try something like -
+
+  ```rust
+  // match to Square and try bind to variable 'a'
+  Shape::Square{a}=> (*a as f32) * (*a as f32)
+  
+  // Error
+  /*
+  error[E0026]: variant `main::Shape::Square` does not have a field named `a`
+    --> src/main.rs:19:27
+     |
+  19 |             Shape::Square{a}=> (*a as f32) * (*a as f32),
+     |                           ^
+     |                           |
+     |                           variant `main::Shape::Square` does not have this field
+     |                           help: a field with a similar name exists: `s`
+  *
+  ```
+
+- If it is a **tuple** on the other hand, there is no **field name**, so we can use any name for the **bind variables**. Which means if `Shape::Square` was a **tuple** we could write -
+
+  ```rust
+  // match to Square and bind to variable 'a'
+  Shape::Square(a)=> (*a as f32) * (*a as f32)
+  ```
+
+- Note also that since _Rust_ is strongly typed we have to **explicitly cast** the **`u32`** values to **`f32`** to do the computation.
+
+- Another thing to note is that with the **variables** we are having to **"dereference"** them. If we try using the variables directly we will get an error -
+
+  ```rust
+  // match to Traingle and bind to variables 'b' & 'h'
+  // use variables 'b' and 'h' dierctly
+  Shape::Triangle{b, h}=> 0.5 * (b as f32) * (h as f32)
+  // Error!
+  /*
+  error[E0606]: casting `&u32` as `f32` is invalid
+    --> src/main.rs:15:43
+     |
+  15 |             Shape::Triangle{b, h}=> 0.5 * (b as f32) * (h as f32),
+     |                                           ^-^^^^^^^^
+     |                                           ||
+     |                                           |help: dereference the expression: `*b`
+     |                                           cannot cast `&u32` as `f32`
+  
+  error[E0606]: casting `&u32` as `f32` is invalid
+    --> src/main.rs:15:56
+     |
+  15 |             Shape::Triangle{b, h}=> 0.5 * (b as f32) * (h as f32),
+     |                                                        ^-^^^^^^^^
+     |                                                        ||
+     |                                                        |help: dereference the expression: `*h`
+     |                                                        cannot cast `&u32` as `f32`
+  */
+  ```
+
+  _Rust_ complains because "`b`" and "`h`" are **references to `u32`** (`&u32`) , therefore we cannot use the value it points to without **dereferencing** it. The reason the **bound variables** are **references** and not direct **values** is that we have written our function to **borrow** a **reference** to `Shape`, which means the **bound variables** are also **references** to the  `Shape` data (the variables do not have **ownership** of the data, which makes sense).
+
+  For demonstration, if we change our function to take **ownership** instead of **borrow**, the **bound variables** will also have the direct data -
+
+  ```rust
+  // 'Shape' parameter takes ownership
+  fn area(shp: Shape) -> f32{
+      match shp {
+          // match variables 'b' & 'h' have direct access to value
+          Shape::Triangle{b, h}=> 0.5 * (b as f32) * (h as f32),
+          // match variables 'l' & 'b' have direct access to value
+          Shape::Rectangle{l, b}=> (l as f32) * (b as f32),
+          // match variable 'a' has direct access to value
+          Shape::Square(a)=> (a as f32) * (a as f32),
+          // catch all
+          _ => 0.0
+      }
+  }
+  
+  let s1 = Shape::Triangle{b: 51, h: 43};
+  
+  // pass in the shape variable 's1' with ownership
+  println!("area is {}", area(s1));
+  // area is 1096.5
+  ```
+
+  Of course passing **ownership** is not a good practice and seldom ever required. In practice we would almost always stick to **borrowing reference** and **dereferencing** the variables in the **match branch**.
+
+- The last case in out **match expression** is the "**catch all pattern**" (`_ => 0.0`). Like most other languages, the **match expression** is **exhaustive** in its case check. This means that _Rust_ will force us to ensure that all possible _variants_ are considered. If we have missed out any the compiler will output an error an specify the ones we have missed.
+
+  ```rust
+  fn area(shp: Shape) -> f32{
+      match shp {
+          Shape::Triangle{b, h}=> 0.5 * (b as f32) * (h as f32),
+          Shape::Rectangle{l, b}=> (l as f32) * (b as f32),
+          Shape::Square(a)=> (a as f32) * (a as f32),
+       	// missed Circle and no 'catch-all'
+      }
+  }
+  /*
+  error[E0004]: non-exhaustive patterns: `Circle { .. }` not covered
+    --> src/main.rs:13:15
+     |
+  5  | /     enum Shape{
+  6  | |         Triangle {b: u32, h: u32},
+  7  | |         Rectangle {l: u32, b:u32},
+  8  | |         Square (u32),
+  9  | |         Circle {r: u32}
+     | |         ------ not covered
+  10 | |     }
+     | |_____- `main::Shape` defined here
+  ...
+  13 |           match shp {
+     |                 ^^^ pattern `Circle { .. }` not covered
+     |
+     = help: ensure that all possible cases are being handled, possibly by adding wildcards or more match arms
+  */
+  ```
+
+  This helps prevent many potential bugs. Ideally we should handle each and every case, and if we are really interested only in a subset of the cases then we can ignore the others by using a **catch all** pattern (**`_`**). The "**`_`**" identifier is a placeholder for a **pattern** or **variable** we are not interested in. This is similar to many other languages such as _Haskell_ or _TypeScript_.
+
+Now we can see how to extract the value from the **`Option`** enum we saw earlier -
+
+```rust
+fn main() {
+    let x: Option<i32>;
+    
+    x = Some(23);
+    
+    let dbl = match x {
+        // extract data in 'x' to bound varaible 'i'
+        Some(i) => i * 2,
+        // return 0 for None
+        None => 0
+    };
+    
+    println!("{}", dbl);
+    // 46
+}
+
+```
+
+Simply use the **`match`** expression to match for the _variants_ **`Some`** and **`None`**, and bind the data within **`Some`** to the branch variable. This is a very common pattern in languages that use **ADTs**.
 
 #### The "`if let`" construct with enums
+
+Whenever we are interested only in **one case** of a set of **matches** and we wish to ignore the rest, the **`if let`** syntax provides a less verbose way to do it -
+
+```rust
+fn main() {
+    // enum to represent shape
+    enum Shape{
+        Triangle {b: u32, h: u32},
+        Rectangle {l: u32, b:u32},
+        Square {s: u32},
+        Circle {r: u32}
+    }
+    
+    let s1 = Shape::Circle{r: 13};
+    
+    // 'if let` syntax to handle single case of circle
+    if let Shape::Circle{r} = s1 {
+        println!("Circle has radius {}", r);
+    }
+}
+```
+
+So to handle the case of matching to a single case (_variant_), we use an **`if`** statement with a **`let`** binding that allows us to **match** for that single case and handle it with the **`if`** body.
+
+- Note how we have gone from an **"expression form"** withe **match** to a **"statement form"** with the **if let**.
+- Also whilst this is convenient for handling **single  match** cases, we lost the ability for _Rust_ to do **exhaustive** check for us.
+
+If we wanted to do something special for the cases that are **not** the **single case**, then we have an **`else`** part to the **if let .. else`** - 
+
+```rust
+// 'if let` syntax to handle single case of circle
+if let Shape::Circle{r} = s1 {
+    println!("Circle has radius {}", r);
+} else {
+    // handle if Not Circle
+    println!("This is not a circle!");
+}
+```
+
+Again notice how now it is a very **imperative** style code with a **statement form**, as opposed to an **expression form** we would get with **match expressions**. So whilst it can help with getting less verbose code sometimes, choose wisely before using it considering that we prefer safety and expressiveness first.
+
+## Modularity - Packages, Crates, Modules & Paths
 

@@ -2207,3 +2207,295 @@ Again notice how now it is a very **imperative** style code with a **statement f
 
 ## Modularity - Packages, Crates, Modules & Paths
 
+As our code-base grows big or when "programming in the large" as it is sometimes referred to, the ability to effectively organise and structure your code becomes vital. We should design our code with software architecture such as modularity, cohesion, loose coupling, encapsulation, reuse etc. Every programming language provides some mechanism for modularity.
+
+_Rust_ has a number of features to enable organisation and modularity of code, these are collectively called the **module system** - **modules**, **paths**, **use**, **crates** and **packages**. We shall examine each of these in detail.
+
+### Modules
+
+A **module** is a **logical unit** of organising code into one **cohesive** unit. The different elements of code such as **structs**, **enums**, **functions**, **constants** that we think belong together typically go into one **module**. We can also **nest** modules within them creating an tree like hierarchy.
+
+Beyond this **cohesive** encapsulation they also serve as the mechanism for controlling **visibility**  (or **"privacy"** as per the _Rust_ documentation). By default everything in a **module** is **private**. If we wish to make anything public we have to explicitly do so by qualifying it with the **`pub`** keyword.
+
+Let us take a look at using **modules** to organise some code -
+
+```rust
+// outer module for a bank
+mod bank{
+    // nested module for accounts
+    mod accounts{
+        struct Account{
+            number: u64,
+            amount: f32
+        }
+
+        impl Account{
+            fn create(number: u64) -> Account{
+                Account{
+                    number: number,
+                    amount: 0.0
+                } 
+            }
+
+            fn deposit(&mut self, amt: f32){
+                self.amount += amt;  
+            }
+
+            fn withdraw(&mut self, amt: f32) -> bool {
+                if amt <= self.amount{
+                    self.amount -= amt;
+                    return true
+                }
+                return false  
+            }
+        }
+    }
+	// module for customer
+    mod customers{
+        struct Customer{
+            id: String,
+            name: String,
+            address: Address,
+            // account: Account // this line will not compile now!
+        }
+        
+        struct Address{
+            house: String,
+            street: String,
+            city: String,
+            postcode: String
+        }
+    }
+
+}
+```
+
+We have created a **`bank`** module with nested modules for **`accounts`** and **`customers`**. Now everything is neatly organised into its logical groups. We shall use this example going forward to build on the concepts.
+
+Now let us try using this model from the main function -
+
+```rust
+mod bank{    
+    mod accounts{
+
+        struct Account{
+            number: u64,
+            amount: f32
+        }
+        //...
+    }
+    
+    mod customers{
+        //...
+    }
+    
+}
+
+fn main() {
+    // create an account
+    let acc = Account::create(100120013001); // Error!
+    
+}
+/*
+error[E0433]: failed to resolve: use of undeclared type or module `Account`
+  --> src/main.rs:54:15
+   |
+54 |     let acc = Account::create(100120013001);
+   |               ^^^^^^^ use of undeclared type or module `Account`
+*/
+```
+
+This gives an error saying we are trying to use an **"undeclared "** type or module. The name `Account` does not exist the place we are trying to use it. In order to do that we have to bring it into **scope**, by using the **`use`** keyword (this is similar to "`import`" in _Java_, _Python_, _ES6_ etc. or "`using`" in _C#_).  We specify the module or item we want to bring into scope using its **path**, which can be an "**absolute path**" in which case it starts from the "**crate root**" (we shall cover crates shortly), or an "**absolute path**" which means it starts from the same level in the hierarchy as we are trying to use it from. This is exactly like **files system paths** in this respect. Of course as is the convention, we use the **scope resolution operator** (`::`)  to refer to items in inner scope. 
+
+The syntax would look like -
+
+```rust
+ // bring Account into scope with absolute path
+    use crate::bank::accounts::Account;
+// OR
+ // bring Account into scope with realtive path
+    use bank::accounts::Account;
+```
+
+Whether to use **absolute** or **relative** path depends on the context of the code, and how we perceive the module will move around in time. If the module definition and the code that uses it remain in the same hierarchy relative to each other, then use a **relative path**, else  it might be better to use **absolute path**.
+
+OK, so let us now correct our code above by bringing the `Account` type into scope -
+
+```rust
+fn main() {
+    // bring Account into scope with realtive path
+    use bank::accounts::Account;
+    
+    // create an account
+    let acc = Account::create(100120013001); // Still Error!
+    
+}
+/*
+error[E0603]: module `accounts` is private
+  --> src/main.rs:54:15
+   |
+54 |     use bank::accounts::Account;
+   |               ^^^^^^^^ this module is private
+...
+*/
+```
+
+Now _Rust_ complains that `accounts` is **private** (since everything in a module is **private** by default). If we need to have access to that we would have to explicitly make it **public** using the **`pub`** keyword. Note that if we we cannot just make the nested `accounts` module **`pub`**, but all the internal types and functions that we need to to access from outside as well. So to make our coed work, we would have to do something like -
+
+```rust
+mod bank{
+    // make module 'accounts' public
+    pub mod accounts{
+		// make struct 'Account' public
+        pub struct Account{
+            number: u64,
+            amount: f32
+        }
+        
+        impl Account{
+            // make assocaited function public
+            pub fn create(number: u64) -> Account{
+                Account{
+                    number: number,
+                    amount: 0.0
+                } 
+            }
+            // make method public
+            pub fn deposit(&mut self, amt: f32){
+                self.amount += amt;  
+            }
+            // make method public
+            pub fn withdraw(&mut self, amt: f32) -> bool {
+                if amt <= self.amount{
+                   self.amount -= amt;
+                   return true
+                }
+                return false  
+            }
+        }
+        
+    }
+    
+    mod customers{
+        //...
+    }
+    
+}
+
+fn main() {
+    // bring Account into scope with realtive path
+    use bank::accounts::Account;
+    
+    // create a mutable account
+    let mut acc = Account::create(100120013001);
+    
+    // deposit some money
+    acc.deposit(2000.0);   
+}
+```
+
+Now this compiles without any error. We have brought the type `Account` that we want into scope using the **`use`** keyword. We have also made all the internal types, functions and methods that we need public with the **`pub`** qualifier.
+
+So far so good, we seemed to have created an account and deposited some money into it. Now let us try to print out the amount  -
+
+```rust
+fn main() {
+    // bring Account into scope with realtive path
+    use bank::accounts::Account;
+    
+    // create a mutable account
+    let mut acc = Account::create(100120013001);
+    
+    // deposit some money
+    acc.deposit(2000.0);
+    
+    println!("Account balance is {}", acc.amount); // Error!
+}
+/*
+error[E0616]: field `amount` of struct `bank::accounts::Account` is private
+  --> src/main.rs:62:39
+   |
+62 |     println!("Account balance is {}", acc.amount);
+   |                                       ^^^^^^^^^^
+*/
+```
+
+ This happened because whilst we declared the **struct** `Account` as **public**, we did not say anything about its members (`number`, `amount`). With a product type like **struct**, it is not just sufficient to make the **struct** public but also the members we want to access from outside. 
+
+```rust
+mod bank{
+    // public module accounts
+    pub mod accounts{
+		// public struct Account
+        pub struct Account{
+            number: u64,
+            // public member 'amount'
+            pub amount: f32
+        }
+        // ...       
+    }
+    
+    // ...
+}
+
+fn main() {
+    // bring Account into scope with realtive path
+    use bank::accounts::Account;
+    
+    // create an account
+    let mut acc = Account::create(100120013001);
+    
+    // deposit some money
+    acc.deposit(2000.0);
+    
+    println!("Account balance is {}", acc.amount);
+    // Account balance is 2000    
+}
+
+```
+
+Now the member `amount` is accessible from outside.
+
+With a sum type like **enum** however this is not the case, if the **enum** is **public** its members are **public** as well. This makes sense because an **enum** value **"is"** essentially one of its members, whereas a **struct** contains (or **"has"**) its members. So if we had an enum in our module we could make it public and its members would be public implicitly -
+
+```rust
+mod bank{
+    // public module accounts    
+    pub mod accounts{
+        // public enum 'AccType'
+        #[derive(Debug)]
+        pub enum AccType {
+            // members are also become public
+            Current,
+            Savings,
+            Investment
+        }
+     	// ...   
+    }
+    
+}
+
+fn main() {
+    // bring Account into scope with realtive path
+    use bank::accounts::Account;
+    
+    // create an account
+    let mut acc = Account::create(100120013001);
+    
+    // deposit some money
+    acc.deposit(2000.0);
+    
+    println!("Account balance is {}", acc.amount);
+    // Account balance is 2000
+    
+    // access and print an AccType
+    println!("{:?}", bank::accounts::AccType::Investment);
+    // Investment
+}
+```
+
+Because the **enum**  `AccType` is **public** so are all its _variants_.
+
+Notice how we used the `AccType` **enum** directly without bringing it into scope with the **`use`** keyword. That is because we used the **fully qualified name** with the entire **path** specified while referring to it. In one-off scenarios like this it may be fine, but it can get get quite unwieldy pretty soon. Not to mention the nightmare of having to change everywhere in code if the **path** changes sometime.
+
+Bringing multiple "*"

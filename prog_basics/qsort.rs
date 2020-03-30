@@ -5,14 +5,13 @@ fn main() {
     //let mut nums = [2, 4, 6, 3, 1, 5];
     //let mut nums = [2, 1];
     
-    // qsort the array
+    // call 'qsort' with a mutable reference
     qsort(&mut nums);
     println!("{:?}", nums);
-    
-    
+    // sorted array 
 }
 
-// in-place q-sort
+// in-place quicksort, takes a mutable slice of i32
 fn qsort(ns: &mut [i32]){
     let l = ns.len();
     if l > 1{
@@ -34,6 +33,7 @@ fn qsort(ns: &mut [i32]){
             }
             si += 1;
         }
+        // recursive quicksort left and right of pivot
         qsort(&mut ns[..pi]); // qsort the left (smaller) side
         qsort(&mut ns[pi+1..]); // qsort the right (greater) side
     }

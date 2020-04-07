@@ -2213,7 +2213,7 @@ _Rust_ has a number of features to enable organisation and modularity of code, t
 
 ### Modules
 
-A **module** is a **logical unit** of organising code into one **cohesive** unit. The different elements of code such as **structs**, **enums**, **functions**, **constants** that we think belong together typically go into one **module**. We can also **nest** modules within them creating an tree like hierarchy.
+A **module** is a **logical unit** of organising code into one **cohesive** unit. The different elements of code such as **structs**, **enums**, **functions**, **constants** that we think belong together typically go into one **module**. We can also **nest** modules within them creating an tree like hierarchy. In that sense of encapsulating and code organisation it is similar to **namespaces** in _C#_ (though with some important differences as well).
 
 Beyond this **cohesive** encapsulation they also serve as the mechanism for controlling **visibility**  (or **"privacy"** as per the _Rust_ documentation). By default everything in a **module** is **private**. If we wish to make anything public we have to explicitly do so by qualifying it with the **`pub`** keyword.
 
@@ -2396,6 +2396,8 @@ fn main() {
 
 Now this compiles without any error. We have brought the type `Account` that we want into scope using the **`use`** keyword. We have also made all the internal types, functions and methods that we need public with the **`pub`** qualifier.
 
+#### Making structs and enums public
+
 So far so good, we seemed to have created an account and deposited some money into it. Now let us try to print out the amount  -
 
 ```rust
@@ -2498,4 +2500,172 @@ Because the **enum**  `AccType` is **public** so are all its _variants_.
 
 Notice how we used the `AccType` **enum** directly without bringing it into scope with the **`use`** keyword. That is because we used the **fully qualified name** with the entire **path** specified while referring to it. In one-off scenarios like this it may be fine, but it can get get quite unwieldy pretty soon. Not to mention the nightmare of having to change everywhere in code if the **path** changes sometime.
 
-Bringing multiple "*"
+#### Multiple Paths
+
+Sometimes we may need to bring a **number** of **nested paths** into scope and there can be a lot of duplication in the path specifiers. _Rust_ provides a shorthand using a **path list** syntax, where we can specify the common part of the paths outside followed by **`::`** and then the **list** of paths that differ inside curly braces **`{`** **`}`** - 
+
+```rust
+// bring Account into scope
+use bank::accounts::Account;
+// bring AccType into scope
+use bank::accounts::AccType;
+
+// can be written as
+
+// bring Account and AccType into scope
+use bank::accounts::{Account, AccType};
+```
+
+#### The Glob operator (`*`)
+
+If there are a large number of items to import from a module we can use the **`*`** syntax. This will bring **all public** members of the module into scope - 
+
+```rust
+// bring all accessible members into scope
+use bank::accounts::*;
+```
+
+#### Import with Alias (`as`)
+
+When we import something into scope with **`use`** we can give it an **alias** using the "**`as`**" keyword. Then we can use the alias within the referring code instead of  the original name.
+
+This is often used for reasons such as **name resolution conflict** (another entity with the same name already exists in that scope), or if the original name is too long or can be renamed to give better meaning in the used context.
+
+```rust
+// import with alias
+use bank::accounts:: AccType as Type;
+// use alias
+println!("{:?}", Type::Investment);
+```
+
+#### Re-exporting with "`pub use`"
+
+With the **"`pub use`"** syntax we can re-export what we bring into scope. This is typically done when we wish to create a more friendly pubic API (a facade) for our model. This gives us the freedom to choose an internal module hierarchy that is efficient for our purposes as library writer, but expose a simpler public facade that is more intuitive to the consumer of our module.
+
+```rust
+mod bank{
+   	// nested module accounts   
+    pub mod accounts{
+        #[derive(Debug)]
+        pub enum AccType {
+            Current,
+            Savings,
+            Investment
+        }
+        
+        //  ...
+        
+    }
+    // re-export AccType at this level
+    pub use accounts::AccType as AccountType;
+    
+    mod customers{
+        // ...
+    }
+    
+}
+
+fn main() {
+    // import the re-exported definition
+    use bank::AccountType;
+    
+    println!("{:?}", AccountType::Investment);
+    // Investment    
+}
+
+```
+
+Note how we used a simpler **path**, the nesting and hierarchy of the modules within the crate is of no use to me as a consumer.
+
+Most of these concepts related to **`use`** and **paths** are similar to **import** in other languages such as _Python_ and _ES6_. With a good idea of the logical **code organisation**, **scope** and **visibility** management, we can now look at **crates** and **packages**.
+
+### Crates
+
+A **crate** is the unit of compilation in _Rust_. It is analogous to **assembly** in _.Net_ or **jar** in _Java_. A **crate** can be compiled into a **library** or a **binary **(executable). We shall now see how we can move our **`bank`** module into a **crate** and consume it from another one. To build a deeper understanding of what is going on, we shall do this by hand using the **rustc** compiler only. In practice however we would always use **cargo** (the build and package manager) to do this. 
+
+We shall start off with our source structure looking like -
+
+```bash
+demo_crate
+	|___ main.rs
+	|___ banking.rs
+```
+
+We have two source files, with the code of the **`bank`** module we wrote moved into the **`banking.rs`** file, and a **`main.rs`** that will try to consume it. They are both in the same directory.
+
+- The first thing to do is to **build** **`banking.rs`** into a **library crate** as that will be referenced by the **`main.rs`**. By default the **rustc** compiler will produces a **binary crate**, we can use the **`--crate-type=lib`** flag to override this behaviour.
+
+  ```bash
+  $ rustc --crate-type=lib banking.rs
+  $ ls
+  banking.rs  libbanking.rlib  main.rs
+  ```
+
+  We can see that **rustc** now created a **library crate** with the name **`libbanking.rlib`** (it prefixes the filename with **`lib`** and gives a **`.rlib`** extension). If we wish to specify a different name, we can do that with the **`--crate-name=`** flag. For example if we try to name it **finance**, we would get **`libfinance.rlib`** instead.
+
+  ```bash
+  $ rustc --crate-type=lib --crate-name=finance banking.rs
+  $ ls
+  banking.rs  libfinance.rlib  main.rs
+  ```
+
+  Let us just revert to keep it to **banking**.
+
+- At this point we have a **library crate** (**`libbanking.rlib`**) with the name **`banking`** and some nested modules in it. Based on the code we wrote the hierarchy tree should look like -
+
+  ```bash
+  banking (Crate)
+  	|_____bank (top most Module)
+  			|____ accounts (nested Module)
+              |		|____ Account (Struct)
+              |		|____ AccType (Enum)
+              |
+              |____ customers (nested Module)
+              		|____ Customer (Struct)
+              		|____ Address (Struct)
+  ```
+
+- Now we need a way to **reference** this **library** in our **`main.rs`**, bring the modules into scope and use the types/functions within it. We **reference** the library using the **`extern crate <crate-name>`** syntax. This will **link** the **library** to our source, and also **import** its contents (preserving its internal hierarchy and visibility) under a single **top level module** with the name of the **library**. So our **`main.rs`** code would look like - 
+
+  ```rust
+  // reference external crate
+  extern crate banking;
+  
+  fn main(){
+      // bring struct into scope using full path
+      // top level module name is same as library ("banking")
+      use banking::bank::accounts::Account;
+  	// use struct from the library
+      let mut acc = Account::create(100120013001);
+  
+      acc.deposit(2000.0);
+  
+      println!("account balance is {}", acc.amount);
+  }
+  ```
+
+- Next we need to compile the **`main.rs`** into a **binary crate**. Since the compiler needs to **link** this to another **crate**, we have to specify that as a **command line flag** to the **rustc** compiler using the **`--extern <crate-name>=<file-name>`** flag.
+
+  ```bash
+  $ rustc --extern banking=libbanking.rlib main.rs
+  $ ls
+  banking.rs  libbanking.rlib  main  main.rs
+  ```
+
+  We compiled **`main.rs`** into a **binary crate** (**`main`**), specifying the **external library** with name **`banking`** which is the file-name **`libbanking.rlib`**.
+
+- Now we can execute our **binary crate** and see if we get the output we expected -
+
+  ```bash
+  $ ./main
+  account balance is 2000
+  ```
+
+  So the **`main`** **crate** was able to **link** to a **library crate**, **import** the **modules** and use it.
+
+This should give us a good understanding of what a **crate** is and how they are related to **modules**, how to **reference**, **link** and **use** them. As mentioned before though, in practice we would never deal with **crates** directly in this fashion, rather we would use the **cargo** tool to manage it all for us. And that brings us to the concept of **packages**.
+
+### Packages
+
+Packages are...
+

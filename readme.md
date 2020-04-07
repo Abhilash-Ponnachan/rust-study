@@ -2615,12 +2615,11 @@ We have two source files, with the code of the **`bank`** module we wrote moved 
 
   ```bash
   banking (Crate)
-  	|_____bank (top most Module)
-  			|____ accounts (nested Module)
-              |		|____ Account (Struct)
-              |		|____ AccType (Enum)
-              |
-              |____ customers (nested Module)
+      |____bank (top most Module)
+          |____ accounts (nested Module)
+          |		|____ Account (Struct)
+          |		|____ AccType (Enum)
+          |____ customers (nested Module)
               		|____ Customer (Struct)
               		|____ Address (Struct)
   ```

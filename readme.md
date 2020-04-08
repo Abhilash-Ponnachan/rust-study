@@ -2666,5 +2666,118 @@ This should give us a good understanding of what a **crate** is and how they are
 
 ### Packages
 
-Packages are...
+A **package** is a container of one or more crates, with some manifest information about its version, dependencies, how to build it etc. It is also the unit of code distribution. _Rust_ comes with a **package manager** tool called **Cargo**, that essentially manages the life-cycle of a _Rust_ project. We would typically use **cargo** to do the following:
+
+- Create a new project (**package**), with some scaffolding.
+- Declare and manage dependencies with other **packages**.
+- Integrate with the **package repository** (**`crates.io`**)
+- Run **unit tests**
+- Build and distribute our **packages**
+
+Whilst we shall see more about **cargo** as we go along, we shall focus on their **unit of software** which we call **packages**. A **package** has the following properties:
+
+- It should contain a **`cargo.toml`** file that describes the **package**, its dependencies and how to build it.
+- It should contain **at least** one **crate**.
+- It can contain as many **binary crates** as needed.
+- However it can have only  a maximum of **one** **library crate**.
+- It can have a combination of **binary and library crates**, but still only one **library crate** at most.
+
+To get a feel of how to work with **packages** and **cargo**, let us take out **banking example** and move it all (including the **main**) into a **binary crate** within one **package**, and let us start and configure the project using **cargo**.
+
+```bash
+$ cargo new hello_package
+     Created binary (application) `hello_package` package
+```
+
+Now we should have a _Rust_ project withe following file system structure - 
+
+```bash
+hello_pacakage
+    ├── Cargo.toml
+    └── src
+        └── main.rs
+```
+
+The **`Cargo.toml`** file would look like -
+
+```bash
+[package]
+name = "hello_package"
+version = "0.1.0"
+authors = ["<git user name>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+```
+
+It uses the the **TOML (Tom's Obvious Markup Language)** markup syntax, and looks very similar to old school **INI** files. As of now we can see the **package name**, **semantic versioning** and the fact there are no **dependencies**. Additionally it has created a **`src`** directory and a simple **`main.rs`** with just an entry-point and a **`println!`**.
+
+> We can observe the similarity with other programming platforms such as **Node.js**, where **npm** is the **package manager** and **package.json** is the manifest file equivalent to our **`Cargo.toml`**.
+
+To continue with our example, let us move all our code into **`main.rs`**. 
+
+```rust
+// hello_package/src/main.rs
+mod bank{
+    pub mod accounts{
+        // ...
+        pub struct Account{
+            number: u64,
+            pub amount: f32
+        }
+        
+        impl Account{
+            //...
+        }
+    }
+        
+    mod customers{
+        // ...
+    }
+}
+
+fn main() {
+	// use the local module in the same file
+    use bank::accounts::Account;
+
+    let mut acc = Account::create(100120013001);
+
+    acc.deposit(2000.0);
+
+    println!("account balance is {}", acc.amount);
+}
+
+```
+
+We can now **check** or **build** it with **cargo** -
+
+```bash
+$ cargo build
+```
+
+This will create **build** and crate a **crate** in a nested **`target`** folder - 
+
+```bash
+hello_package
+    ├── Cargo.lock
+    ├── Cargo.toml
+    ├── src
+    │   └── main.rs
+    └── target
+        └── debug
+            ├── build
+            ├── deps
+            │   ├── ...
+            ├── examples
+            ├── hello_package   // --- the binary crate ---
+            ├── hello_package.d
+            └── incremental
+
+```
+
+As we can see **cargo** does quite a few things behind the scene like creating a **Cargo.lock** file and a **target** directory with  multiple sub directories, and finally the **crate** itself with the name of the **package**. So far this seems simple enough. 
+
+Next we shall try to move the **bank** module to its own file..
 

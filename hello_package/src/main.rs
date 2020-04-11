@@ -1,61 +1,10 @@
-mod bank{
-    pub mod accounts{
-        #[derive(Debug)]
-        pub enum AccType {
-            Current,
-            Savings,
-            Investment
-        }
-        
-        pub struct Account{
-            number: u64,
-            pub amount: f32
-        }
-        
-        impl Account{
-            pub fn create(number: u64) -> Account{
-                Account{
-                    number: number,
-                    amount: 0.0
-                } 
-            }
-            
-            pub fn deposit(&mut self, amt: f32){
-                self.amount += amt;  
-            }
-            
-            pub fn withdraw(&mut self, amt: f32) -> bool {
-                if amt <= self.amount{
-                   self.amount -= amt;
-                   return true
-                }
-                return false  
-            }
-        }
-        
-    }
-        
-    mod customers{
-        
-        struct Customer{
-            id: String,
-            name: String,
-            address: Address
-            // account: Account
-        }
-        
-        struct Address{
-            house: String,
-            street: String,
-            city: String,
-            postcode: String
-        }
-    }
-}
+// ';' after module name => load from a file 'bank.rs'
+mod banking;
 
 fn main() {
 
-    use bank::accounts::Account;
+    // import 'Account' into scope
+    use banking::bank::accounts::Account;
 
     let mut acc = Account::create(100120013001);
 

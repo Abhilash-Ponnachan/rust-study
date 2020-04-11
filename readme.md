@@ -2779,5 +2779,177 @@ hello_package
 
 As we can see **cargo** does quite a few things behind the scene like creating a **Cargo.lock** file and a **target** directory with  multiple sub directories, and finally the **crate** itself with the name of the **package**. So far this seems simple enough. 
 
-Next we shall try to move the **bank** module to its own file..
+##### Split Modules into Independent Files
 
+As our code base increases, we might want to organise our modules into their own source files. In our example we can now move the **bank** module to its own file. To do this we create a **file** in the same **`src`** directory with the **same name** as the **module**, and move all our **`bank`** module code into that -
+
+```bash
+hello_package
+    ├── Cargo.lock
+    ├── Cargo.toml
+    ├── src
+        ├── bank.rs (code of bank module)
+        └── main.rs
+....
+```
+
+```rust
+// hello_package/src/bank.rs
+mod bank{
+    pub mod accounts{
+        // ...
+        pub struct Account{
+            // ...
+        }
+    }    
+    mod customers{
+        // ...
+    }
+}
+```
+
+
+
+Next in **`main`** where we try to use the **`bank`** module we need to let _Rust_ know that it can load it from a different file. To do that we add a line in **`main.rs`** -
+
+```rust
+// ';' after module name => load from a file 'bank.rs'
+mod bank;
+
+fn main() {
+
+    // import 'Account' into scope
+    use bank::accounts::Account;
+
+    let mut acc = Account::create(100120013001);
+
+    acc.deposit(2000.0);
+
+    println!("account balance is {}", acc.amount);
+}
+```
+
+When we use a **`;`** after the **`mod bank`** (instead of the **module body** in **`{}`**) then _Rust_ will **load** the contents of the **module** from another **file with the same name** as the **module**.
+
+Now if we try to **build**/**check** our package -
+
+```bash
+$ cargo check
+Checking hello_package v0.1.0 (/.../hello_package)
+error[E0432]: unresolved import `bank::accounts`
+ --> src/main.rs:7:15
+  |
+7 |     use bank::accounts::Account;
+  |               ^^^^^^^^ could not find `accounts` in `bank`
+
+```
+
+We get an **error!** It says that **`main.rs`** cannot find **`bank::Accounts`**. The reason for this is the **structure** of our **`bank.rs`** source code. We have an **outer module** with the name **`bank`** that **contains** the **inner modules**. When we move that to its own **file** with the name **`bank`**, and then **load** it into **`main.rs`**, the **whole content** of the **file** gets **loaded** , but also gets **enclosed** in a **module** with the same name as the **file**.
+
+So in this case the actual **module** hierarchy wold be -
+
+```bash
+  bank
+    |--bank
+        |--accounts
+            |--Account
+```
+
+This means we have to change the **use** statement to -
+
+```rust
+ use bank::bank::accounts::Account;
+```
+
+But when we try this we get another error!
+
+```bash
+Checking hello_package v0.1.0 (/.../hello_package)
+error[E0603]: module `bank` is private
+ --> src/main.rs:7:15
+  |
+7 |     use bank::bank::accounts::Account;
+```
+
+By now we should know that this is because in our **`bank.rs`** source code we did not make the **`bank`** module public, so we can do that now -
+
+```rust
+// hello_package/src/bank.rs
+pub mod bank{
+    pub mod accounts{
+        // ...
+        pub struct Account{
+            // ...
+        }
+    }    
+    mod customers{
+        // ...
+    }
+}
+```
+
+Now this will **build** successfully and we can run the **package** -
+
+```bash
+$ ./target/debug/hello_package
+account balance is 2000
+```
+
+Note that we still have only **one crate** (`hello_package`), but **source files** with the **module** moved into that -
+
+```bash
+|---------|
+| bank.rs |-----|
+|---------|     |
+                |
+              (Load)
+                |
+|---------|     |                          |---------------|
+| main.rs |-----|--------(Compile)-------> | hello_package |  (Crate)
+|---------|                                |---------------|
+```
+
+In this the **`main.rs`** is called the **crate root**, that is what the _Rust_ compiler starts from and makes the **root module** of our **crate**.
+
+In this example we had a slight confusion with the **path** of the **`bank`** module. Because of the additional wrapping created by the separate file, we had to use a path like -
+
+```rust
+ use bank::bank::accounts::Account;
+```
+
+We could make it more clearer by giving a **different name** for our file, we could have called it **`banking.rs`** instead. 
+
+```bash
+hello_package
+    ├── Cargo.toml
+    ├── src
+        ├── banking.rs (code of bank module)
+        └── main.rs
+....
+```
+
+Then we would change the **references** and **import** within the **`main.rs`** -
+
+```rust
+// ';' after module name => load from a file 'banking.rs'
+mod banking;
+
+fn main() {
+
+    // import 'Account' into scope
+    use banking::bank::accounts::Account;
+	// ...
+}
+```
+
+Another way we could address this would be to avoid the **top level** (**`bank`**) module specification in the **`banking.rs`** file. Since by moving it into a **separate file**, we get an **enclosing** module (**banking**) automatically, we could just directly have **`accounts`** and **`customers`** at the **top level**. Then we could import it more succinctly like -
+
+```rust
+use banking::accounts::Account
+```
+
+We could do away with the extra covering.
+
+##### Separate into Multiple Crates
+
+Continuing along this line we could next move our **banking** module into its own **crate** as a **library** and use it within the **main** (**binary crate**). It will be similar to how we have done it directly using **`rustc`**, but this time we will do it as a **package** using **`cargo`** (as it would normally be done).

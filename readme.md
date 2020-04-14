@@ -2895,7 +2895,7 @@ $ ./target/debug/hello_package
 account balance is 2000
 ```
 
-Note that we still have only **one crate** (`hello_package`), but **source files** with the **module** moved into that -
+Note that we still have only **one crate** (`hello_package`), but 2 **source files** with the **module** moved into that -
 
 ```bash
 |---------|
@@ -2953,3 +2953,97 @@ We could do away with the extra covering.
 ##### Separate into Multiple Crates
 
 Continuing along this line we could next move our **banking** module into its own **crate** as a **library** and use it within the **main** (**binary crate**). It will be similar to how we have done it directly using **`rustc`**, but this time we will do it as a **package** using **`cargo`** (as it would normally be done).
+
+In fact to turn our simple solution above (which has the **`banking`** module in its own file **`banking.rs`**) into one where the **`banking`** module is in its own **library crate** , there is _nothing_ we have to change in the **project structure**. There are only **two** changes we have to make - one is to modify is the **`Cargo.toml`** file to instruct **cargo** that there is a **library crate** and a **binary crate**, what we want their **names** to be and the **path** to find the files. So with the same project structure as -
+
+```bash
+hello_package
+    ├── Cargo.toml
+    ├── src
+        ├── banking.rs (code of bank module)
+        └── main.rs (main uses banking)
+....
+```
+
+we would modify the **`Cargo.toml`** to -
+
+```bash
+[package]
+name = "hello_package"
+version = "0.1.0"
+authors = ["<...>"]
+edition = "2018"
+
+[lib]
+name = "banking"
+path = "src/banking.rs"
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
+
+[dependencies]
+
+```
+
+We can see a **`[lib]`** section that gives the **name** and **path** of the **library crate** and **source file**. Similarly there is a **`[[bin]]`** section with details of the **`main`** **binary crate**.
+
+Since now **`banking`** is a **separate crate**, we will have to **reference** it as such in our **`main.rs`**, so that would be the only other change that we would have to do -
+
+```rust
+// reference separate crate banking
+extern crate banking;
+
+fn main() {
+
+    // import 'Account' into scope
+    use banking::bank::accounts::Account;
+
+    let mut acc = Account::create(100120013001);
+	// ...
+}
+```
+
+We use the **`extern crate`** to **reference** **`banking`**, everything else remains the same. Now if we build this we would get -
+
+```bash
+hello_package
+    ├── Cargo.toml
+    ├── src
+    │   ├── banking.rs
+    │   └── main.rs
+    └── target
+        └── debug
+            ├── hello_package (our package)
+            ├── hello_package.d
+            ├── libbanking.d
+            ├── libbanking.rlib (library crate)
+            ├── main (binary crate)
+            └── main.d
+```
+
+_Note: of course there are many other files and directories created for dependency management and as part of the build. But we can ignore those for our purposes here._
+
+Now we can run our package as we did before -
+
+```bash
+$ ./target/debug/hello_pcakage
+account balance is 2000
+```
+
+##### Default filenames and **`bin`** directory
+
+Another way to achieve the same would be to have our **banking library** with the **"default filename"** - **`lib.rs`** and the source for the **binary** in a **`src/bin`** directory. If we stick to this convention, we might not even have to modify the **`Cargo.toml`**. 
+
+```bash
+hello_package
+    ├── Cargo.toml
+    ├── src/
+    │   ├── lib.rs
+    │   └── bin/
+    │       ├── main.rs
+```
+
+The use of the **`src/bin`** directory is really useful if there are **multiple binary crates**. However we can always have at-most **one library crate** in our **package**.
+
+As our project gets even bigger we may want more **structure** and **flexibility** in organising our crates. We may have **multiple libraries** that we wish to reuse. **Cargo** offers a _feature_ called **workspaces** to help achieve this. It helps us manage **multiple related packages** in one logical group. We shall examine **workspaces** later.

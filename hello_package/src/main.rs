@@ -1,5 +1,5 @@
-// ';' after module name => load from a file 'bank.rs'
-mod banking;
+// reference separate crate banking
+extern crate banking;
 
 fn main() {
 

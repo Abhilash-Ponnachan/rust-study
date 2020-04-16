@@ -342,7 +342,7 @@ A _Compound Type_ can contain/group multiple values into one. _Rust_ has two pri
     ```rust
     let rec = ("Alan", 1001, 75.3);
     ```
-    If we wish to decalre the types of the vlaues within the declaration we can do so by specifying them in parentheses as a type for the variable - 
+    If we wish to declare the types of the values within the declaration we can do so by specifying them in parentheses as a type for the variable - 
     ```rust
     let rec: (&'static str, i32, f32) = ("Alan", 1001, 75.3);
     ```
@@ -392,7 +392,7 @@ A _Compound Type_ can contain/group multiple values into one. _Rust_ has two pri
     ```
     If we attempt to access and element outside the range of the array, _Rust_ will throw an _'index out of bounds..'_ error at runtime.
 
-    The difference between a **tuple** and an **array** is the intended purpose for each. A **tuple** is menat to be used as a coumpond type for passing a set set of values around - as arguments to functions or return them. Whereas an **array* is used as an iterable collection of values.
+    The difference between a **tuple** and an **array** is the intended purpose for each. A **tuple** is meant to be used as a compound type for passing a set set of values around - as arguments to functions or return them. Whereas an **array** is used as an iterable collection of values.
     ```rust
     // array of scores
     let scores = [87, 67, 48, 56, 73];
@@ -571,17 +571,17 @@ _Rust_ provides memory management without a _garbage collector_ (unlike .Net or 
 - **Rules of "Ownership"**  
     "Ownership" in _Rust_ is based on 3 simple rules -
         - Each **value** has a variable that is called its **owner**
-        - There can only be **one owner** at a time
-        - When the **owner** goes out of **scope** the **value** will be **dropped**
+            - There can only be **one owner** at a time
+            - When the **owner** goes out of **scope** the **value** will be **dropped**
 
-        _Note: Rust is "block scoped"_ -
-        
-        ```rust
-        {
-            let x = "Hello"; // x scope starts
-            ... // x is valid here
-        } // x goes out of scope here
-        ```
+    _Note: Rust is "block scoped"_ -
+    
+    ```rust
+    {
+        let x = "Hello"; // x scope starts
+        ... // x is valid here
+    } // x goes out of scope here
+    ```
     
     In order to illustrate the behaviour of _ownership_ we need a more complex data type than the simple _scalar_ types as they are allocated on the **stack** since they have limited ad predetermined size. _string literals_ will not do either as they are compiled into the binary and have known fixed size.  
     We need a data type that needs _allocation_ on the **heap** such as the **String** type. Unlike _string literals_ the `String` types is able to store a varying amount of text (i.e. it can grow or shrink). Whilst there is a lot to be said of `String`, for our purposes now we shall limit ourselves to aspects that are relevant to memory management.
@@ -3047,3 +3047,246 @@ hello_package
 The use of the **`src/bin`** directory is really useful if there are **multiple binary crates**. However we can always have at-most **one library crate** in our **package**.
 
 As our project gets even bigger we may want more **structure** and **flexibility** in organising our crates. We may have **multiple libraries** that we wish to reuse. **Cargo** offers a _feature_ called **workspaces** to help achieve this. It helps us manage **multiple related packages** in one logical group. We shall examine **workspaces** later.
+
+## Common Collections
+
+The _Rust_ _standard library_ includes a number of useful data structures called **collections**. These **collections** are _composites types_, i.e. they contain multiple values. This is a common feature of almost all programming languages and we can easily see the analogy with _Python_, _C++_, _C#_ etc.
+
+We have already seen the **primitive** composite types - **array** and **tuple**. However they are both **fixed size** collections, i.e. they cannot have elements added or removed dynamically to them. The **collections** from the **standard library** that we shall see next are **dynamic** and the data they point to is stored on the **heap**. Each of the different **collection** type has its own characteristics and intended purpose. Like any programming language, these data structures are essential to writing useful programs.
+
+### Vector 
+
+A **vector** is a _homogeneous_ collection of elements in _contiguous_ memory, that can grow or shrink in size. So this is just like an **array** but its size is not fixed. Some languages call this data structure **list**(_Python_) and some call it **arraylists** (_C#_), it is all the same.
+
+#### Creating a Vector
+
+We create a **vector** using **`Vec::new`** associated function, or the **`vec!`** macro -
+
+```rust
+fn main() { 
+    let v1: Vec<i32> = Vec::new(); 
+    println!("v1 = {:?}", v1);
+    // v1 = []
+    
+    let v2 = vec![10, 20 , 30, 40];
+    println!("v2 = {:?}", v2);
+    // v2 = [10, 20, 30, 40]
+}
+```
+
+Note that with **`Vec::new`** we have to specify the **type** of the variable as there are no values that _Rust_ can use to infer it from. The **`vec!`** macro on the other hand can infer the type as it crates and **initialises** the **vector** in the same statement. 
+
+#### Adding and Removing elements
+
+**Vector** provides methods to **add** and **delete** elements -
+
+```rust
+
+fn main() {
+    let mut v1: Vec<i32> = Vec::new(); 
+    println!("Initial = {:?}", v1);
+    // Initial = []
+    
+    // adding elements
+    v1.push(10);
+    v1.push(20);
+    v1.push(30);
+    v1.push(40);
+    println!("After push = {:?}", v1);
+    // After push = [10, 20, 30, 40]
+    
+    // deleting elements 
+    let i1 = v1.remove(0); // specify index
+    println!("After remove = {:?}, elem was {}", v1, i1);
+    // After remove = [20, 30, 40], elem was 10
+}
+```
+
+Note that we have to make the **vector** **mutable**, and then we can use **`push()`** and **`remove()`** methods to add and delete elements. Of course if we try to delete at an index out of bounds then _Rust_ will panic with an error.
+
+#### Dropping a Vector
+
+Like any other data, when a **vector** goes out of scope it gets dropped, and along with it, its elements also get cleaned up. We can see this in action if we make a **wrapper struct** that implements the **`Drop`** trait and override the **`drop()`** method to print something out when it gets dropped, and then make a **vector** of this struct - 
+
+```rust
+fn main() {
+    // a custom wrapper struct
+    struct BoxItem{
+       value: i32 
+    }
+    // overrides 'drop()' to print value
+    impl Drop for BoxItem{
+        fn drop(&mut self){
+            println!("..dropping item {}", self.value);
+        }
+    }
+    
+    {
+        // create a vector of 'BoxItem`
+        let mut vi: Vec<BoxItem> = Vec::new();
+        
+        // add elements to it
+        vi.push(BoxItem{value: 10});
+        vi.push(BoxItem{value: 20});
+        vi.push(BoxItem{value: 30});
+    } // vi goes out of scope and dropped
+    // ..dropping item 10
+    // ..dropping item 20
+    // ..dropping item 30
+    // the elements also get dropped
+}
+```
+
+This makes it visible that when the **vector** is dropped, its content gets cleaned up as well.
+
+#### Accessing elements
+
+There are **two** ways to access elements of a **vector** -
+
+- Using the **index** of the element within square brackets **`[]`**.
+- Using the **`get()`** method which takes an **index** and returns an **`Option<&T>`**.
+
+We have to bear in mind that accessing an element from a **vector** has the same **copy** or **borrow** semantics as assignment. As an example let us try to access elements from a **`Vec<i32>`** -
+
+```rust
+fn main() {
+    let u = vec![10, 20 , 30, 40];
+    let u1 = u[0];
+    println!("First number is {}", u1);
+    // First number is 10    
+}
+```
+
+This seems to work just fine. Now let us try this with a heap allocated data in a vector **`Vec<String>`** -
+
+```rust
+fn main() {
+    let v = vec![String::from("Jan"),
+            String::from("Feb"),
+            String::from("Mar")];
+    let v1 = v[0];
+    println!("First month is {}", v1); //Error
+}
+/*
+rror[E0507]: cannot move out of index of `std::vec::Vec<std::string::String>`
+ --> src/main.rs:6:14
+  |
+6 |     let v1 = v[0];
+  |              ^^^^
+  |              |
+  |              move occurs because value has type `std::string::String`, which does not implement the `Copy` trait
+  |              help: consider borrowing here: `&v[0]`
+*/
+```
+
+_Rust_ complains because when we try to access the element directly using **`[]`**, it tries to apply **copy semantics** for **ownership** of the element in the **vector**. With **`Vec<i32>`** this was fine because **`i32`** implements the **`Copy`** trait, however with **`Vec<String>`**, **`String`** does not implement **`Copy`**. So the normal way to access an element is to **borrow** it using a **reference**. So we would normally do -
+
+```rust
+fn main() {
+    let u = vec![10, 20, 30, 40];
+    let u1 = &u[0]; // borrow 1st element
+    println!("First number is {}", u1);
+    // First numbr is 10
+
+    let v = vec![String::from("Jan"),
+            String::from("Feb"),
+            String::from("Mar")];
+    let v1 = &v[0]; // borrow 1st element
+    println!("First month is {}", v1);
+    // First month is Jan
+}
+```
+
+With **borrow** the **index** based access works for both types.
+
+Of course we can also do a **mutable borrow** in case we wish to **modify** an element in a **vector** -
+
+```rust
+fn main() {
+    let mut u = vec![10, 20, 30, 40];
+    let u1 = &mut u[0]; // mutable borrow 1st element
+    *u1 = 15; // de-reference and modify pointed to value
+    println!("First number is {}", &u[0]);
+    // First numbr is 15
+}
+```
+
+Here we do a **mutable borrow** of the first element, **dereference** the access the pointed value and modify it. Indeed we see that the actual first element in the **vector** gets modified.
+
+With the **`get()`** method we get back an **`Option<&T>`** type that we can check and operate on using **pattern matching** -
+
+```rust
+
+fn main() {    
+    let v = vec![String::from("Jan"),
+            String::from("Feb"),
+            String::from("Mar")];
+    
+    let v1 = v.get(0); // returns an Option<&String>
+    match v1{
+        Some(first) => println!("First month is {}", first),
+        None => println!("Cannot access an invalid element")
+    }
+    // First month is Jan
+}
+```
+
+Here **`get()`** returns an **`Option<&String>`** that we can **unpack** using **pattern matching**. If we had tried to access an index that does not exist -
+
+```rust
+fn main() {    
+    let v = vec![String::from("Jan"),
+            String::from("Feb"),
+            String::from("Mar")];
+    
+    let v1 = v.get(100); // try access invalid index
+    match v1{
+        Some(first) => println!("First month is {}", first),
+        None => println!("Cannot access an invalid element")
+    }
+    // Cannot access an invalid element
+}
+```
+
+Here the program gracefully handles this scenario without panicking and crashing. Which method we use depends on our particular scenario.
+
+With **`get()`** too the rules of **borrow** and **ownership** will apply. So if we try to **`get()`** an element from a **mutable vector**, add an element to the **vector** and then use the **borrowed** element - 
+
+We get an error. We cannot have a **mutable** and **immutable** **borrow** in the same scope and then try to use one of them. This might seem strange that we cannot **borrow** a **reference** to an **element** and **modify** the **vector** in the same scope. The reason is the underlying implementation of **vector** is such that sometimes when we modify the **vector** , it might not have **contiguous space** in memory and might require it to **reallocate** the whole **vector** to a new space - in which case the **reference** we hold to the element would become invalid. -
+
+```rust
+fn main() {
+    let mut v = vec![String::from("Jan"),
+            String::from("Feb"),
+            String::from("Mar")];
+            
+    let v1 = v.get(0); // get first element
+    
+    v.push(String::from("Apr")); // add an element to 'v'
+    
+    // try using the immutable borrow 'v1'
+    match v1{
+        Some(first) => println!("First month is {}", first),
+        None => println!("Cannot access an invalid element")
+    }
+    // Error
+}
+/*
+error[E0502]: cannot borrow `v` as mutable because it is also borrowed as immutable
+  --> src/main.rs:10:5
+   |
+8  |     let v1 = v.get(0); // get first element
+   |              - immutable borrow occurs here
+9  |     
+10 |     v.push(String::from("Apr")); // add an element to 'v'
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^ mutable borrow occurs here
+11 |     
+12 |     match v1{
+   |           -- immutable borrow later used here
+*/
+```
+
+So even if take an **immutable borrow** on an **element** we cannot have **mutable borrow** of the **vector** within the same scope and try to use the **immutable** one later. This helps avoid data inconsistency and race conditions.
+
+#### Iterating over a Vector
+

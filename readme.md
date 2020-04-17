@@ -3290,3 +3290,80 @@ So even if take an **immutable borrow** on an **element** we cannot have **mutab
 
 #### Iterating over a Vector
 
+Just like we did with **array** we can iterate over the elements of a **vector** using the **`for .. in`** loop -
+
+```rust
+fn main() {
+    let v = [10, 20, 30, 40, 50];
+    
+    for m in &v{ // 'm' is a borrow because of '&v'
+        println!("{}", m);
+    }
+}
+```
+
+_Note_: how we are **borrowing** the element from the **vector** by using **`&v`** and not taking a **copy**. As we have seen before accessing elements (even if we are looping) is better done as a **borrow**.
+
+We can also have also have **mutable borrows** in our loop if we wish to modify the elements - 
+
+```rust
+fn main() {
+    // mark vector as mutable
+    let mut v = [10, 20, 30, 40, 50];
+    
+    // loop variable is a mutable borrow 
+    for m in &mut v{
+        // dereference the borrow to access the pointed to element
+        *m += 1;
+    }
+    
+    for m in &v{
+        print!("{}, ", m);
+    }
+    // 11, 21, 31, 41, 51,
+}
+```
+
+The key things to observe are:
+
+- We made a **mutable** borrow from the **vector** by specifying **`for m in &mut v{..`**}.
+- We have to **dereference** the loop variable to access the **element** it points to, so that we can change it. When we do simple access of the **reference** to do things like _printing_ or _passing_ it around we don't need to **dereference** it explicitly because _Rust_ handles it behind the scene for us. However if we need to modify the value we will have to **dereference** it access the value it points to.
+
+#### Storing Multiple Types
+
+Since a **vector** can store only elements of a single type, if we have a situation that has variants of types to be handled we can do that using **enums** -
+
+```rust
+fn main() {
+// define an enum for different shapes
+    enum Shape{
+        Square(i32),
+        Rect(i32, i32),
+        Triangle(i32, i32, i32),
+        Circle(f64)
+    }
+    
+    // declare a vector of 'Shape'
+    let mut shps: Vec<Shape> = Vec::new();
+    // add different variants of 'Shape' to it
+    shps.push(Shape::Circle(10.13));
+    shps.push(Shape::Rect(15, 17));
+    shps.push(Shape::Square(23));
+    shps.push(Shape::Circle(9.37));
+    
+    // iterate over the vector
+    for s in &shps{
+        // pattern match on loop variable
+        match s{
+            Shape::Square(x) => println!("square with side {}", x),
+            Shape::Rect(x, y) => println!("rectangle with sides {}, {}", x, y),
+            Shape::Circle(x) => println!("circle with radius {}", x),
+            _ => println!("Unhandled shape"),
+        }
+    }
+}
+```
+
+Here we are able to handle different kinds of shapes using an **enum** to represent the _variants,_ then operate on that **vector** of **enums**.
+
+### Strings - UTF-8 encoded text

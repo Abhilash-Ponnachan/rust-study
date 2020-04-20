@@ -3367,3 +3367,121 @@ fn main() {
 Here we are able to handle different kinds of shapes using an **enum** to represent the _variants,_ then operate on that **vector** of **enums**.
 
 ### Strings - UTF-8 encoded text
+
+_Rust_ uses two data types to represent textual information:
+
+- The **`str`** _slice_ which represents an immutable sequence of characters. This is used for **string literals** and almost always referenced with a **borrow** (**`&str`**).  The underlying data can be thought of like an **array** of **bytes** embedded into the **binary** or on the **stack** (or even reference to data on the **heap**). **`str`** **slice** is part of the _Rust_ **core** language, it is very memory efficient, safe and rather inflexible.
+- The _standard library_ (**`std`**) in _Rust_ provides another, more flexible type called **`String`**, which are allocated on the **heap** and can be **mutable**. This is more closer to the concept of strings from other programming languages, however the similarity ends soon there. Because of the memory trade-off decisions taken by _Rust_, handling **`String`** data in _Rust_ is more complicated than in most other languages (though **`Go`** has similar interface).
+
+When necessary _Rust_ allows us to translate between the types easily, as long as the memory semantics are valid. Under the hood both **`str`** **slice** and **`String`** are a sequence of **bytes** that are **`UTF-8`** encoded. The difference as we have seen is way it is allocated and handled in memory. 
+
+We have already covered the **`str`** **slice** previously, in this section we shall focus more on the **`String`** type. The first thing to learn would be how to create a **`String`**, and we can do that from a **literal** using the **`from()`** associated function, or the **`to_string()`** method on **`str`** slice -
+
+```rust
+let x = String::from("ART");
+let y = "BANG".to_string();
+```
+
+Before we explore further operations on **`String`**, we should try to understand how _Rust_ represents text as **`UTF-8`** under the hood. This will make it clear what we can do what we cannot do and why. Also **`UTF-8`** applies to both **`String`** and **`str`**.
+
+**`UTF-8`** is a **Unicode** encoding scheme that uses **variable byte** length to represent **code points**. A **code point** is a unique _integer_ mapping that represents a particular **character**. In the old days we had **`ASCII`** encoding that used **7** bits, which gave us a range of **`0`** to **`127`** to represent all the **Latin character set** and some **control characters**. As the need for **multilingual** support evolved various **encoding** standards emerged. **Unicode** was the most successful with initial attempts of **`UTF-32`** and **`UTF-16`** which used **fixed byte** sizes of **4** and **2** bytes respectively fell out of favour because of the waste in memory for the existing **`ASCII`** ranges. **`UTF-8`** emerged as the new de-facto standard because it was much more memory efficient and was transparently backward compatible with existing **`ASCII`** encoded data. However it is a little more complicated than the other schemes because it uses **variable size bytes**.
+
+The best way to understand this is with some examples. We can use the **`char()`** and **`bytes()`** methods to examine the underlying data of the **`String`** -
+
+```rust
+let x = String::from("ART");
+for c in x.chars(){
+    print!("{} ", c);
+}
+// ART
+
+println!();
+for c in x.bytes(){
+    print!("{} ", c);
+}
+// 65        82        84
+// 01000001  01010010  01010100
+// A         R         T
+```
+
+This seems straight forward with a **`String`** of 3 characters **`A R T`**, and each character represented with **one byte** and the encoding seems to be the same as **`ASCII`**(**`A`** has **65** and so on). 
+
+Note how in this case the **first bit** of each byte is always **`0`**, this tells us that this is a **single byte** character (and compliant with **`ASCII`**). We can then read the **8 bits** and find the **code point**. In this case we have **code points** **65**, **82**, and **84** - which map to the English (Latin) characters **`A`**,  **`R`**, **`T`** respectively., and so we have our string text.
+
+Suppose instead of the familiar English characters we had some Greek text say - **`φκβ`** -
+
+```rust
+let y = "φκβ".to_string();
+for c in y.chars(){
+    print!("{} ", c);
+}
+// φ κ β
+
+println!();
+for c in y.bytes(){
+    print!("{} ", c);
+}
+// 207       134       206       186       206       178
+// 11001111  10000110  11001110  10111010  11001110  10110010
+```
+
+Well now even though there are only **3 characters**, we have **6 bytes** in memory to encode them! This is because beyond the originally **`ASCII`** range of characters **`UTF-8`** uses multiple bytes to represent a character (actually its **code point** - the Integer number the character is mapped to). 
+
+In this example the first byte is **`207`** or **`11001111`** in binary. the first **two bits** are **`11`**(this is called the **Byte Order Mark** or **BOM**), which tells us that it is a **2 byte** **code point** and the rest of the bits are part of the **code point**. The second byte from it is **`134`** or **`10000110`** which has **10`** which tells us that this is a **continuation** byte and the remaining bits are the rest of the **code point** data. So from the first **two** bytes we can extract the **code point** as -
+
+```rust
+//First  Byte = BOM ++ Code Point bits
+	 11001111 = 11 ++ 001111
+//  Next Byte = Cont. Marker ++ Code Point bits
+     10000110 = 10 ++ 000110
+
+// => the complete Code Point is 
+	 001111 ++ 000110 = 001111000110 = 966 = 0xCF86 = φ
+```
+
+If we consider at the **BOM** and **Continuation Markers** and extract the rest of the **bits** we can obtain the **code point** for the **`UTF-8`** character. In this case we get the **`966`** in decimal or **`CF86`** in hexadecimal which is the **code point** for the Greek letter **`φ`**. Using the scheme **`UTF-8`** encodes **1,112,064**  **code points** covering a wide range of alphabets of various languages.
+
+Let us look at a more complicated example from Hindi using the _Devanagari_ script -
+
+```rust
+let txt = String::from("नमस्ते");   
+for c in txt.chars(){
+    print!("{} ", c);
+}
+// न म स ् त े
+
+println!();
+for c in txt.bytes(){
+    print!("{} ", c);
+}
+// 224 164 168 224 164 174 224 164 184 224 165 141 224 164 164 224 165 135
+```
+
+In this case the Hindi **word** is **`नमस्ते`** (which means greetings). This comprises of the _human readable letters_ - **` "न", "म", "स्", "ते"`**- which technically called **"grapheme clusters"**.
+
+The **characters** (_Rusts_ **`char`** data type) of this word are - **`न, म, स, ्, त, े`**. Along with the **letters** like **`न`** we also have 2 extra **characters** **` ्`** & **`  े`** which are called **diacritics** used to modify the **pronunciation** and **accent**. So in total we have **6** **characters** each needing a **scalar value** or **code point** to represent it.
+
+Finally we see there are **18** **bytes** to represent this in **`UTF-8`** encoding. **3 bytes** fro each of the **6** **code points**. We can try to manually extract the **code point bits** from the **first 3 bytes** -
+
+```rust
+// First Byte = BOM ++ Code Point data
+224 => 11100000 = 111 ++ 00000
+// Next Byte = Cont. Marker ++ Code Point data
+164 => 10100100 = 10  ++ 100100
+// Next Byte = Cont. Marker ++ Code Point data
+168 => 10101000 = 10  ++ 101000
+
+// => Code Point from first 3 bytes
+00000 ++ 100100 ++ 101000 = 00001001 00101000 = 2344 = न
+```
+
+From the **3** **bytes** we get the **scalar value** of the **code point** as **2344** in decimal which corresponds to the Hindi letter **`न`**. 
+
+Now it is more clear that representing and handling text data is more complicated than it looks when we are aware of the underlying memory layout. Because of the memory safety and performance choices made by _Rust_ as programmers we are exposed to come of this complexity. In most other languages these aspects are abstracted away and the language runtime or the compiler does a lot of heavy memory adjustments behind the scene, but this can come with some performance overheads.
+
+#### String Operations 
+
+With a solid understanding of **`UTF-8`** and how it relates to **`String`** and **`str`** in _Rust_ we can move onto common operations that we can perform with **`String`** types.
+
+
+

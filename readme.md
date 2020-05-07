@@ -3427,7 +3427,7 @@ for c in y.bytes(){
 
 Well now even though there are only **3 characters**, we have **6 bytes** in memory to encode them! This is because beyond the originally **`ASCII`** range of characters **`UTF-8`** uses multiple bytes to represent a character (actually its **code point** - the Integer number the character is mapped to). 
 
-In this example the first byte is **`207`** or **`11001111`** in binary. the first **two bits** are **`11`**(this is called the **Byte Order Mark** or **BOM**), which tells us that it is a **2 byte** **code point** and the rest of the bits are part of the **code point**. The second byte from it is **`134`** or **`10000110`** which has **10`** which tells us that this is a **continuation** byte and the remaining bits are the rest of the **code point** data. So from the first **two** bytes we can extract the **code point** as -
+In this example the first byte is **`207`** or **`11001111`** in binary. the first **two bits** are **`11`**(this is called the **Byte Order Mark** or **BOM**), which tells us that it is a **2 byte** **code point** and the rest of the bits are part of the **code point**. The second byte from it is **`134`** or **`10000110`** which has **`10`** which tells us that this is a **continuation** byte and the remaining bits are the rest of the **code point** data. So from the first **two** bytes we can extract the **code point** as -
 
 ```rust
 //First  Byte = BOM ++ Code Point bits
@@ -3439,7 +3439,7 @@ In this example the first byte is **`207`** or **`11001111`** in binary. the fir
 	 001111 ++ 000110 = 001111000110 = 966 = 0xCF86 = φ
 ```
 
-If we consider at the **BOM** and **Continuation Markers** and extract the rest of the **bits** we can obtain the **code point** for the **`UTF-8`** character. In this case we get the **`966`** in decimal or **`CF86`** in hexadecimal which is the **code point** for the Greek letter **`φ`**. Using the scheme **`UTF-8`** encodes **1,112,064**  **code points** covering a wide range of alphabets of various languages.
+If we consider the **BOM** and **Continuation Markers** and extract the rest of the **bits** we can obtain the **code point** for the **`UTF-8`** character. In this case we get the **`966`** in decimal or **`CF86`** in hexadecimal which is the **code point** for the Greek letter **`φ`**. Using this scheme **`UTF-8`** encodes **1,112,064**  **code points** covering a wide range of alphabets from various languages.
 
 Let us look at a more complicated example from Hindi using the _Devanagari_ script -
 
@@ -3457,11 +3457,11 @@ for c in txt.bytes(){
 // 224 164 168 224 164 174 224 164 184 224 165 141 224 164 164 224 165 135
 ```
 
-In this case the Hindi **word** is **`नमस्ते`** (which means greetings). This comprises of the _human readable letters_ - **` "न", "म", "स्", "ते"`**- which technically called **"grapheme clusters"**.
+In this case the Hindi **word** is **`नमस्ते`** (which means greetings). This comprises of the _human readable letters_ - **` "न", "म", "स्", "ते"`**- which is technically called **"grapheme clusters"**.
 
 The **characters** (_Rusts_ **`char`** data type) of this word are - **`न, म, स, ्, त, े`**. Along with the **letters** like **`न`** we also have 2 extra **characters** **` ्`** & **`  े`** which are called **diacritics** used to modify the **pronunciation** and **accent**. So in total we have **6** **characters** each needing a **scalar value** or **code point** to represent it.
 
-Finally we see there are **18** **bytes** to represent this in **`UTF-8`** encoding. **3 bytes** fro each of the **6** **code points**. We can try to manually extract the **code point bits** from the **first 3 bytes** -
+Finally we see there are **18** **bytes** to represent this in **`UTF-8`** encoding. **3 bytes** for each of the **6** **code points**. We can try to manually extract the **code point bits** from the **first 3 bytes** -
 
 ```rust
 // First Byte = BOM ++ Code Point data
@@ -3477,11 +3477,216 @@ Finally we see there are **18** **bytes** to represent this in **`UTF-8`** encod
 
 From the **3** **bytes** we get the **scalar value** of the **code point** as **2344** in decimal which corresponds to the Hindi letter **`न`**. 
 
-Now it is more clear that representing and handling text data is more complicated than it looks when we are aware of the underlying memory layout. Because of the memory safety and performance choices made by _Rust_ as programmers we are exposed to come of this complexity. In most other languages these aspects are abstracted away and the language runtime or the compiler does a lot of heavy memory adjustments behind the scene, but this can come with some performance overheads.
+Now it is more clear that representing and handling text data is more complicated than it looks when we are aware of the underlying memory layout. Because of the memory safety and performance choices made by _Rust_, as programmers we are exposed to some of this complexity. In most other languages these aspects are abstracted away and the language runtime or the compiler does a lot of heavy memory adjustments behind the scene, but this can come with some performance overheads.
 
 #### String Operations 
 
 With a solid understanding of **`UTF-8`** and how it relates to **`String`** and **`str`** in _Rust_ we can move onto common operations that we can perform with **`String`** types.
 
+##### Updating Strings
 
+Since a **`String`** is a **`Vec<u8>`** it can grow in size and its content can be changed. 
+
+We can use **`push()`** and **`pop()`** to add or remove characters from a string -
+
+```rust
+fn main() {
+    let mut txt = String::new();
+    txt.push('φ');
+    txt.push('κ');
+    txt.push('β');
+    println!("{}", txt);
+    // φκβ
+    let c = txt.pop(); // pops the last char off
+    println!("{}", c.unwrap()); // unwrap option<char>
+    // β
+    println!("{}", txt); // now 'txt' will be only 2 chars
+    // φκ
+}
+```
+
+It is pretty much resembles standard **`push`** and **`pop`** from any vector. One thing to note is that **`pop`** method returns and  **`Option<T>`** so we have to **`unwrap`** it to get the actual value.
+
+To append a `String` to another `String` we would use the **`push_str`** method. Actually though the method takes an **`&str`** slice and not a **`String`** as parameter, so if we try passing in a **`String`** it will fail -
+
+```rust
+fn main() {
+    let mut txt = String::from("uno");
+   
+    let s1 = String::from(" dos");
+    txt.push_str(s1);
+    println!("{}", txt); // Error
+}
+/*
+error[E0308]: mismatched types
+ --> src/main.rs:6:18
+  |
+6 |     txt.push_str(s1);
+  |                  ^^
+  |                  |
+  |                  expected `&str`, found struct `std::string::String`
+  |                  help: consider borrowing here: `&s1`
+*/
+```
+
+As the error message states, we need to pass in a **`&str`** slice, which we can do simply by "prefixing **`s1`** with a **`&`** to borrow the value", and _Rust_ will coerce it to a **`&str`** slice -
+
+```rust
+fn main() {
+    let mut txt = String::from("uno");
+   
+    let s1 = String::from(" dos");
+    txt.push_str(&s1); // borrow s1
+    println!("{}", txt);
+    // uno dos
+}
+```
+
+To **concatenate** two strings we can use the **`+`** operator or the **`format!`** macro. Let us take an example of each -
+
+```rust
+fn main() {
+    let s1 = String::from("alpha");
+    let s2 = String::from(" beta");
+    // concatenate two strings with '+'
+    let s3 = s1 + s2; // Error
+    println!("{}", s3);
+}
+/*
+error[E0308]: mismatched types
+ --> src/main.rs:5:19
+  |
+5 |     let s3 = s1 + s2; // Error
+  |                   ^^
+  |                   |
+  |                   expected `&str`, found struct `std::string::String`
+  |                   help: consider borrowing here: `&s2`
+*/
+```
+
+Oops! that did not work. Because the **`+`** operator uses the **`add`** method, which expects the second parameter to be a **borrow**, since we do not want to take ownership of the second string (otherwise that would not be available for use in this context after the append operation). So we can correct that as follows -
+
+```rust
+let s1 = String::from("alpha");
+let s2 = String::from(" beta");
+let s3 = s1 + &s2; // s2 is a borrow
+println!("{}", s3);
+// alpha beta
+```
+
+The **`add`** method looks like below (actually it uses generics, but for our purposes we can use the materialised types) - 
+
+```rust
+fn add(self, s: &str) -> String { 
+    // ..
+}
+```
+
+Note that the first parameter is **not** a **borrow**, so in effect the method takes **ownership** of the **`self`** instance it is called on and transfers that to the result.  So if we try using the variable bound to the string instance before concatenation then it will not be available - 
+
+```rust
+let s1 = String::from("alpha");
+let s2 = String::from(" beta");
+let s3 = s1 + &s2; // s1 is an ownership transfer
+println!("Old string = {}", s1); // Error!
+println!("New string = {}", s3);
+/*
+error[E0382]: borrow of moved value: `s1`
+ --> src/main.rs:6:33
+  |
+3 |     let s1 = String::from("alpha");
+  |         -- move occurs because `s1` has type `std::string::String`, which does not implement the `Copy` trait
+4 |     let s2 = String::from(" beta");
+5 |     let s3 = s1 + &s2; // s1 is an ownership transfer
+  |              -- value moved here
+6 |     println!("Old string = {}", s1); // Error!
+  |                                 ^^ value borrowed here after move
+*/
+```
+
+The detailed error message says it all!
+
+The second parameter is **`&str`** but we are passing in a **`&String`** argument, this is fine as _Rust_ will coerce this into an **`&str[..]`** slice for us.
+
+If we want to append multiple strings we can do -
+
+```rust
+let s1 = String::from("alpha");
+let s2 = String::from("beta");
+let s3 = String::from("gamma");
+
+let rs = s1 + ", " + &s2 + ", " + &s3;
+println!("New string = {}", rs);
+// New string = alpha, beta, gamma
+```
+
+This is getting unwieldy now, and a better way to do this would be the **`format!`** macro -
+
+```rust
+let s1 = String::from("alpha");
+let s2 = String::from("beta");
+let s3 = String::from("gamma");
+
+let rs = format!("{}, {}, {}", s1, s2, s3);
+println!("New string = {}", rs);
+// New string = alpha, beta, gamma
+```
+
+It is like the **`sprintf`** function in **`C`**. Also **`format!`** macro does **not** take ownership of the variables.
+
+##### Indexing into a String
+
+As we saw in the **UTF-8** section, _Rust_ does not hide the complexity of the underlying binary encoding from the developer. This coupled with the fact that **UTF-8** uses a variable length binary encoding scheme, we cannot just index into the **`String`** which is a **`Vec<u8>`** to get at a character. If we try it _Rust_ will panic with an error -
+
+```rust
+let s1 = String::from("alpha");
+println!("3rd char is = {}", &s1[2]); // Error!
+
+/*
+error[E0277]: the type `std::string::String` cannot be indexed by `{integer}`
+ --> src/main.rs:5:35
+  |
+5 |     println!("3rd char is = {}", &s1[2]);
+  |                                   ^^^^^ `std::string::String` cannot be indexed by `{integer}`
+  |
+  = help: the trait `std::ops::Index<{integer}>` is not implemented for `std::string::String`
+*/
+```
+
+We have also seen how _Rust_ provides **`chars()`** and **`bytes()`** methods to obtain the **characters** and **bytes** (respectively) as **iterables** from a string.
+
+```rust
+let s1 = String::from("alpha");
+for c in s1.chars(){
+    println!("{}", c); 
+}
+```
+
+##### Slicing Strings
+
+_Rust_ supports the **slice** operation on strings. We can try to get the characters using a **slice** with some **range**.
+
+```rust
+let s1 = String::from("alpha");
+println!("1st two chars are '{}'", &s1[0..2]);
+// 1st two chars are 'al'
+```
+
+However this is risky and can panic with runtime error if the range is not at the right character-bye boundary in the **UTF-8** encoding. For example if try the above with a **3 byte** character -
+
+```rust
+let s1 = String::from("नमस्ते");
+println!("1st two chars are '{}'", &s1[0..2]); // Error
+/*
+thread 'main' panicked at 'byte index 2 is not a char boundary; it is inside 'न' (bytes 0..3) of `नमस्ते`'
+*/
+```
+
+The error message says it all!
+
+#### Summary
+
+Once we are exposed to the underlying layout of string data, it is definitely more complex to handle than in other languages that abstract the complexity away, albeit at the cost of performance and memory trade-off. In _Rust_ we are left to deal with complexity as developers when we handle strings.
+
+### Hash Maps
 

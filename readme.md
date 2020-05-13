@@ -3690,3 +3690,179 @@ Once we are exposed to the underlying layout of string data, it is definitely mo
 
 ### Hash Maps
 
+The **`HashMap<K, V>`** is a standard datastructure that enables us to store **values** against **keys** that can be looked-up in constant time. This is a fundamental computer science datastructure available in other languages and libraries, often called by different names such as dictionary (_Python_), hash (_Ruby_), object (_JS_), map (_Haskell_), or associative arrays (_computer science_).
+
+#### Creating Hash Maps
+
+We can create a **`HashMap`** using the **`new()`** constructor function and then **`insert()`** method to add items to it -
+
+```rust
+// explicitly bring HashMap into scope
+use std::collections::HashMap;
+
+fn main() {
+    // hashmap to keep scores by names
+    let mut scrs: HashMap<String, u32> = HashMap::new();
+    // insert values
+    scrs.insert("Alan".to_string(), 81);
+    scrs.insert("Jon".to_string(), 94);
+    scrs.insert("Albert".to_string(), 78);
+}
+```
+
+- The first thing to note is that unlike other collections, **`HashMap`** needs to be explicitly brought into scope with the **`use`** statement as it is not available by default with the prelude. It also has less support from the standard library and do not have **macros** to help create it.
+- When we create the **`HashMap`**, if the code cannot determine the values we are going to insert into it then we would have to specify the type of the generic parameters. In this example it would work even if we had not specified the type because we are inserting items just below with **key** as _String_ and **value** as _u32_, so _Rust_ can infer that.
+- Like other strongly typed languages _Rust_ **`HashMap`** is a homogeneous collection, i.e  all **keys** have to be on the same type and all **values** have to be of one type.
+- Next we use the **`insert`** method to add items to it. If the **key** does **not exist** then it will **add** the item to the **`HashMap`**, however if the **key** **exists** then it will **overwrite/update** the **value**.
+
+Another (more functional) way to create a **`HashMap`** and add values to it is using the **`collect()`** method. It can aggregate from an **iterable** into a **collection**, and depending on the data and the type of the return value it can be a **`HashMap`**. This is best seen with an example -
+
+```rust
+use std::collections::HashMap;
+
+fn main() {
+    // vector of name and score tuples
+    let recs = vec![
+        ("Alan".to_string(), 81),
+        ("Jon".to_string(), 94),
+        ("Albert".to_string(), 78),
+    ];
+    // collect/aggregate vector of tuples iterable to hash-map
+    let scrs: HashMap<String, u32> = recs.into_iter().collect();   
+}
+```
+
+Often we may want to join two collections into a key-value pair and create a dictionary. We can do that in _Rust_ quite easily like above, with the help of an additional **`zip`()** method. The code for that would look like -
+
+```rust
+// vector of names
+let names = vec![
+    "Alan".to_string(), 
+    "Jon".to_string(),
+    "Albert".to_string()
+];
+// vector of scores
+let scores = vec![81, 94, 78];
+
+// zip vectors together and then collect to a mash-map
+let scrs: HashMap<String, u32> = names.into_iter().zip(
+    scores.into_iter()).collect();
+// Note: we have to qualify the return type as 'collect' supports other return types as well
+```
+
+This is a common pattern handled similarly in languages that support functional style of programming. Here is ho wit would look in _Haskell_ -
+
+```haskell
+names = ["Alan", "Jon", "Albert"]
+scores = [81, 94, 78]
+-- zip and collect to a Map
+recs = Map.fromList(zip names scores)
+```
+
+#### HashMaps and Ownership
+
+An important aspect of **`HashMaps`** in _Rust_ that is not familiar in other languages is the **ownership** aspect. So in _Rust_ whenever we **insert** an item into a **`HashMap`** (both the **key** and **value**), it gets **copied** (for objects that implement the **copy** trait) or **moved** to the **`HashMap`**. After insert the **`HashMap`** will be owner of the data. The old variables before adding will not be available for use after they are inserted. Also they get cleaned up when the **`HashMap`** gets cleaned up. We can see that with a an example that we have modified to display a message when the item gets dropped -
+
+```rust
+use std::collections::HashMap;
+
+fn main() {
+    // custom wrapper over int
+    struct BoxItem{
+        value: i32
+    }
+    // override 'drop' to display msg when it gets dellocated
+    impl Drop for BoxItem{
+        fn drop(&mut self){
+            println!("... dropping item : {}", self.value);
+        }
+    }
+    // create instances of our wrapper values
+    let s1 = BoxItem{value: 81};
+    let s2 = BoxItem{value: 94};
+    let s3 = BoxItem{value: 78};
+    
+    // create a new scope
+    {
+        // add the box-item scores the hash-map
+        let items: HashMap<_, _>
+                    = vec![
+                      ("Alan", s1), 
+                      ("Jon", s2), 
+                      ("Albert", s3)
+                    ].into_iter().collect();
+    }
+    // nested block scope ends
+    println!("Outside nested block!");
+}
+/*
+... dropping item : 94
+... dropping item : 81
+... dropping item : 78
+Outside nested block!
+*/
+```
+
+From the output we can see that our _`BoxItem`_ values get dropped as soon as the _`items`_ **`HashMap`** goes out of scope when we exit the nested block.
+
+It is possible to insert **references** into a **`HashMap`**, in which case the **ownership** is not moved. However this will mane that the data that the reference points to will should remain valid at least as long as the **`HashMap`** is valid. We shall examine this detail when we discuss **Lifetimes**. If we modified our example above to simulate this behaviour -
+
+```rust
+use std::collections::HashMap;
+
+fn main() {
+    // custom wrapper over int
+    struct BoxItem{
+        value: i32
+    }
+    // override 'drop' to display msg when it gets dellocated
+    impl Drop for BoxItem{
+        fn drop(&mut self){
+            println!("... dropping item : {}", self.value);
+        }
+    }
+    
+    // create a hash-map 
+    let mut items: HashMap<String, &BoxItem> = HashMap::new();
+    
+    // create a new scope
+    {
+        // create instances of our wrapper values
+        // inside the scope
+        let s1 = BoxItem{value: 81};
+        let s2 = BoxItem{value: 94};
+        let s3 = BoxItem{value: 78};
+        
+        // add references of box-item scores to the hash-map
+        items.insert("Alan".to_string(), &s1); 
+        items.insert("Jon".to_string(), &s2);
+        items.insert("Albert".to_string(), &s3);
+    }
+    // the actual values will get dropped here
+    println!("Outside nested block!");
+    
+    // try access the item from the hash-map later
+    if let Some(item) = items.get("Jon"){
+        println!("Score = {}", item.value);
+    }
+}
+/*
+error[E0597]: `s1` does not live long enough
+  --> src/main.rs:27:42
+   |
+27 |         items.insert("Alan".to_string(), &s1); 
+   |                                          ^^^ borrowed value does not live long enough
+...
+30 |     }
+   |     - `s1` dropped here while still borrowed
+...
+35 |     if let Some(item) = items.get("Jon"){
+   |                         ----- borrow later used here
+   ....
+*/
+```
+
+The compiler will complain that the **borrowed values get dropped while still being borrowed**, and that we are trying ti use this dropped values later. This way _Rust_ prevents us from shooting ourselves in the foot.
+
+#### Accessing a value
+

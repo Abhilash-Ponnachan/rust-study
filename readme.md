@@ -3805,7 +3805,7 @@ Outside nested block!
 
 From the output we can see that our _`BoxItem`_ values get dropped as soon as the _`items`_ **`HashMap`** goes out of scope when we exit the nested block.
 
-It is possible to insert **references** into a **`HashMap`**, in which case the **ownership** is not moved. However this will mane that the data that the reference points to will should remain valid at least as long as the **`HashMap`** is valid. We shall examine this detail when we discuss **Lifetimes**. If we modified our example above to simulate this behaviour -
+It is possible to insert **references** into a **`HashMap`**, in which case the **ownership** is not moved. However this will mean that the data that the reference points to should remain valid at least as long as the **`HashMap`** is valid. We shall examine this detail when we discuss **Lifetimes**. If we modified our example above to simulate this behaviour -
 
 ```rust
 use std::collections::HashMap;
@@ -3866,3 +3866,100 @@ The compiler will complain that the **borrowed values get dropped while still be
 
 #### Accessing a value
 
+In the above example, we have already seen how to access the **value** for given **key**, using the **`get()`** method. This method checks for an entry with the specified **key** and returns an **`Option<&V>`**. This is because if the item does not exist the return value will be **`None`** and if the value exists then it will be wrapped in **`Some(value)`** which we can unwrap or destructure.
+
+```rust
+// access the item from the hash-map using 'get(key)'
+if let Some(item) = items.get("Jon"){
+    // get() returns an 'Option' type
+    println!("Score = {}", item.value);
+}
+```
+
+#### Iterating over the HashMap
+
+We can easily iterate over a **`HashMap`** to get each of the **key-value** pairs. We can use the same code above to insert values and then just iterate over (a reference of) the **`HashMap`** as an iterable of **key-value** pairs -
+
+```rust
+// iterate over key-value pairs in HashMap
+for (k, v) in &items{
+    println!("{} : {:?}", k, v);
+}
+/*
+Alan : BoxItem { value: 81 }
+Jon : BoxItem { value: 94 }
+Albert : BoxItem { value: 78 }
+*/
+```
+
+#### Updating the HashMap
+
+When we **insert** an entry into a **`HashMap`** it has the following behaviour:
+
+- If the **key** does not exist then the **key-value** pair is **added** to the **`HashMap`**
+- However if the **key** already exists then the value will be **overwritten** by the new value 
+
+```rust
+let mut items: HashMap<String, u32> = HashMap::new();
+items.insert("Alan".to_string(), 81); // insert happens
+items.insert("Alan".to_string(), 92); // overrite happens
+    
+println!("{}", items.get("Alan").unwrap());
+// 92 - new value
+```
+
+This is the typical behaviour for **associative arrays** in most languages.
+
+#### Only Inserting if Key does Not exist
+
+Man times we will want to check if a **key** exists and if not then **insert** otherwise do not do anything. In many languages we would have to do this as two step process. _Rust_ provides us with an efficient and handy way to do this using the **`entry()`** method -  
+
+```rust
+items.insert("Alan".to_string(), 81); 
+// check for 'Entry' and if not insert
+items.entry("Alan".to_string()).or_insert(92);
+
+println!("{}", items.get("Alan").unwrap());
+// 81 - old value
+```
+
+The **`entry()`** method returns an **`Entry`** **enum** which represents a **value** that might or might not exist. The **`or_insert()`** method of this **`Entry`** then inserts the **new** value if it does **not exist**, OR if it **does exist** then returns a mutable reference that we can chose to modify or ignore as we wish. This is a clever and much for efficient way to handle this scenario.
+
+#### Updating Values in HashMap based on Current Value
+
+Sometimes we want to update the values in a **`HashMap`** based on the existing values. There are different ways to achieve this depending on the use case. We can get a **mutable** borrow and then update that -
+
+```rust
+// create a hash-map of score
+let mut scores: HashMap<&str, u32> = vec![
+                                            ("Alan", 87),
+                                            ("Bob", 78),
+                                            ("Cathy", 91)
+                                        ].into_iter().collect();
+// iterate and reduce all scores by 5
+// notice mutable borrow of hashmap
+for (_, val) in &mut scores{
+    *val -= 5; // dereferencing from the borrow
+}
+
+println!("{:?}", scores);
+// {"Bob": 73, "Alan": 82, "Cathy": 86}
+```
+
+Notice how we get a **mutable reference** to the **value** which we have to **dereference** and modify. This changes the **original data** in the **`HashMap`**.
+
+We can also use the **`entry()`** + **`or_insert()`** method to get a **mutable reference** to he **value** for a **specific key** (if it exists) and then modify that -
+
+```rust
+// mutable reference to Entry
+let cs = scores.entry("Cathy").or_insert(99);
+// dereference and modify the original value
+*cs = 99;
+
+println!("{:?}", scores);
+// {"Bob": 73, "Alan": 82, "Cathy": 99}
+```
+
+Note again how we have to **deference** the **mutable reference** to access and modify the **original data** stored in the **`HashMap`**.
+
+## Error Handling

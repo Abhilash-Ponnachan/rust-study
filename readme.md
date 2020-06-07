@@ -2305,7 +2305,7 @@ error[E0433]: failed to resolve: use of undeclared type or module `Account`
 */
 ```
 
-This gives an error saying we are trying to use an **"undeclared "** type or module. The name `Account` does not exist the place we are trying to use it. In order to do that we have to bring it into **scope**, by using the **`use`** keyword (this is similar to "`import`" in _Java_, _Python_, _ES6_ etc. or "`using`" in _C#_).  We specify the module or item we want to bring into scope using its **path**, which can be an "**absolute path**" in which case it starts from the "**crate root**" (we shall cover crates shortly), or an "**absolute path**" which means it starts from the same level in the hierarchy as we are trying to use it from. This is exactly like **files system paths** in this respect. Of course as is the convention, we use the **scope resolution operator** (`::`)  to refer to items in inner scope. 
+This gives an error saying we are trying to use an **"undeclared "** type or module. The name `Account` does not exist the place we are trying to use it. In order to do that we have to bring it into **scope**, by using the **`use`** keyword (this is similar to "`import`" in _Java_, _Python_, _ES6_ etc. or "`using`" in _C#_).  We specify the module or item we want to bring into scope using its **path**, which can be an "**absolute path**" in which case it starts from the "**crate root**" (we shall cover crates shortly), or a "**relative path**" which means it starts from the same level in the hierarchy as we are trying to use it from. This is exactly like **files system paths** in this respect. Of course as is the convention, we use the **scope resolution operator** (`::`)  to refer to items in inner scope. 
 
 The syntax would look like -
 
@@ -3963,3 +3963,237 @@ println!("{:?}", scores);
 Note again how we have to **deference** the **mutable reference** to access and modify the **original data** stored in the **`HashMap`**.
 
 ## Error Handling
+
+Error handling in _Rust_ takes a slightly different approach than the familiar **exception trow.. try.. catch** pattern that most mainstream language provide. _Rust_ forces the developer to acknowledge the possibility of error and decide how to deal with it explicitly.
+
+In _Rust_  we have two categories of errors:
+
+- **unrecoverable errors** that we handle with the **`panic!`** **macro**, which will terminate the execution.
+- **recoverable errors** that we represent with the **`Result<T,E>`** **enum**, which we **unwrap** and determine what to do next.
+
+### Unrecoverable errors with **`panic!`**
+
+These are typically bugs or situations that the code is not designed to handle. In such situations the execution is terminated with a **`panic!`** operation. Normally this also **"unwinds"** the execution stack and cleans up the data that it allocated. Whilst this is a cleaner approach it is also more expensive. The alternative is to **"abort"** immediately and leave it to the OS to do the cleanup. This behaviour can be specified using the **`panic = 'abort'`** flag in the **`profile`** section of the **`cargo.toml`** file. For example if we wanted to **abort** on **panic** in the **release mode** we would do this -
+
+```toml
+[profile.release]
+panic = 'abort'
+```
+
+To make the program **panic** we simply call the **`panic!`** macro with the desired message -
+
+```rust
+panic!("..we cant go back from here!!");
+```
+
+Often the code can **panic** from other modules or libraries probably because we used it incorrectly in our code. In such salutations we may want to get a stack trace of the call from our code to the point that resulted in the **panic**. The below code should cause a runtime panic as we are trying access an element in a **vector** beyond its boundaries.
+
+```rust
+fn main() {
+    let arr = vec![1, 2, 3];
+    println!("{}", arr[4]);
+}
+/*
+$ cargo run
+    Finished dev [unoptimized + debuginfo] target(s) in 0.01s
+     Running `target/debug/demo_error`
+thread 'main' panicked at 'index out of bounds: the len is 3 but the index is 4', /rustc/5e1a799842ba6ed4a57e91f7ab9435947482f7d8/src/libcore/slice/mod.rs:2806:10
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace.
+*/
+```
+
+This is referring to some library **`../libcore/slice/mod.rs`** which raised the **panic**. If we want to see the full trace we can do that by specifying the **env variable** **`RUST_BACKTRACE=1`** in the **`cargo run`**.
+
+```bash
+$ RUST_BACKTRACE=1 cargo run
+    Finished dev [unoptimized + debuginfo] target(s) in 0.02s
+     Running `target/debug/demo_error`
+thread 'main' panicked at 'index out of bounds: the len is 3 but the index is 4', /rustc/5e1a799842ba6ed4a57e91f7ab9435947482f7d8/src/libcore/slice/mod.rs:2806:10
+stack backtrace:
+   0: backtrace::backtrace::libunwind::trace
+             at /cargo/registry/src/github.com/backtrace-0.3.40/src/backtrace/libunwind.rs:88
+   ...
+  13: core::panicking::panic_bounds_check
+             at src/libcore/panicking.rs:62
+  14: <usize as core::slice::SliceIndex<[T]>>::index
+             at /rustc/5e1a799842ba6ed4a57e91f7ab9435947482f7d8/src/libcore/slice/mod.rs:2806
+  ...
+  17: demo_error::main # our code
+             at src/main.rs:3
+  18: std::rt::lang_start::{{closure}}
+             at /rustc/5e1a799842ba6ed4a57e91f7ab9435947482f7d8/src/libstd/rt.rs:67
+  ...
+  26: main
+  27: __libc_start_main
+  28: _start
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+```
+
+This will show a **trace** of the calls as it happened and somewhere at line **17** in this case we can see our code in the**`src/main.rs`** at line number **3** that started it all.
+
+### Recoverable Errors with **`Result<T,E>`**
+
+To deal with errors that can be understood and dealt with (**recoverable**) we can use the **`Result<T,E>`** **enum**. The generic type parameters **`T`** represents the type of the **"value"** returned and **`E`** represents the type of the **"error"** if it was an error. In this approach we design our code to return the **`Result<T,E>`** enum instead and the calling code can examine this **enum** and depending on the **variant** it can either unwrap the **value** or deal with the **error**. This pattern is typical in _Rust_ and we will see this pervasively in the standard libraries and projects.
+
+The **`Result<T, E>`** **enum** looks like: 
+
+```rust
+enum Result<T,E>{
+    Ok(T),
+    Err(E)
+}
+```
+
+Let us see how this might be used in practice with an example of trying to open and read from a file:
+
+```rust
+use std::fs::File;
+
+fn main() {
+    let p = "inputs.txt";
+    let f = File::open(p);
+}
+```
+
+Now **`File::open`** operation can fail or succeed depending on the situation. For example maybe the file does not exist or we might not have permission to read the file. To accommodate this the **`File::open`** function returns a **`Result<std::fs::File, std::io:Error>`** type. The calling code can then decide how to handle this. So we could modify this to pattern match the return value and handle it as shown:
+
+```rust
+use std::fs::File;
+
+fn main() {
+    let f = File::open("inputs.txt");
+
+    // pattern match on the result
+    let f = match f {
+        Ok(file) => file,
+        Err(error) => panic!("Problem opening the file: {:?}", error),
+    };
+}
+```
+
+Pattern match to check the two variants. If **`OK`** then the **value** it wraps is what we need, else it is **`Err`** and that will hold the **error**.
+
+This is not very helpful though, we may want to check what the **error** is and handle that differently. For example if the fie does not exist we can create it, but if it is some other error we terminate the program with a **`panic!`**.
+
+```rust
+use std::fs::File;
+use std::io::ErrorKind;
+
+fn main() {
+    let p = "inputs.txt"; 
+    let f = File::open(p);
+
+    let f = match f {
+        Ok(file) => file,
+        Err(error) => match error.kind(){
+            // nested match for type of error
+            ErrorKind::NotFound => match File::create(p){
+                // nested match for file creation function
+                Ok(new_file) => new_file,
+                Err(cr_err) => panic!("Error creating file => {}", cr_err)
+            },
+            other_error => panic!("Error opening file => {:?}", other_error)
+        }
+    };
+}
+```
+
+Here we are doing a set of **nested matches**, first to check the **`ErrorKind`** , and if that is **`NotFound`** then we **create** the file, otherwise we know it is some **other error** and we **`panic!`** and terminate with that **error**. But the **`File::create`** function can have the similar problem that it can fail, so we have another **match** to handle that.
+
+This is a loot of **`match` nesting**. The **`Result<T,E>` enum** gives some methods of its own to handle these scenarios with a lot less code. One is the **`unwrap`** method:
+
+```rust
+use std::fs::File;
+
+fn main() {
+    let p = "inputs.txt"; 
+    let f = File::open(p).unwrap();
+}
+```
+
+The **`unwrap`** method will do the work of checking the **enum** and unpack the contained value for us, OR if if it is an error then it will call **`panic!` macro** for us with the error message.
+
+If we want to **control** the **error** message then we can use the **`expect`** method instead, which is the same as the **`unwrap`** but we can specify what the message should be for **error**.
+
+```rust
+let f = File::open(p).expect("Could not open file {}", p);
+```
+
+Another method that **`Result<T,E>`** gives is a **higher order function**  **`unwrap_or_else()`** for the **error handling**, to which we can give a **closure**:
+
+```rust
+fn main() {
+    let p = "inputs.txt";
+    let f = File::open(p).unwrap_or_else(
+        // handle error when opening file
+        |op_err| {
+            if op_err.kind() == ErrorKind::NotFound {
+                File::create(p).unwrap_or_else(
+                    // handle error on creating file
+                    |cr_err| {
+                        panic!("Error creating file {}", cr_err)
+                    }
+                )
+            }
+            else {
+                panic!("Error opening file {}", op_err);
+            }
+        }
+    );
+}
+```
+
+Note that with this we have more freedom to do what we want in the **error** situation, also we can have **reusable** functions to handle commonly occurring conditions and pass them as the argument to the **HOF** in place of the **closure**.
+
+#### Propagating Errors
+
+When we write **functions** which have code that can cause an error, for example if we are trying to open a file, or make a network connection etc. It is often better to pass-on / propagate that error to the code that is calling our **function**, rather than trying to deal with it ourselves. The calling code often has better context for dealing with the failure appropriately, also that is not really the responsibility of the specific function.
+
+In languages such as _Java_ and _C#_ we **"rethrow"** the error (perhaps with some additional information) and let the first **exception handling** block deal with it. In _Rust_ we design our function to have a return type of **`Result<T, E>`**. let us modify our example above to have a function that reads from a file, and have it called from **`main()`**.
+
+```rust
+use std::fs::File;
+use std::io;
+use std::io::Read;
+
+// return type is Result<T,E> enum
+fn read_from_file(path: &str) -> Result<String, io::Error>{
+    let f = File::open(path);
+    
+    let mut f = match f{
+        Ok(file) => file,
+        Err(error) => return Err(error)
+        // if error return will be variant Err with data 'error'
+    };
+
+    let mut s = String::new();
+
+    match f.read_to_string(&mut s) {
+        Ok(_) => Ok(s),
+        // return variant Ok with data 's' 
+        Err(error) => Err(error)
+        // if error return will be variant Err with data 'error'
+    }
+}
+
+fn main() {
+    let file = "inputs.txt";
+    // call the function to read from file
+    // check the return value and handle as needed
+    match read_from_file(file){
+        Ok(txt) => println!("File contents => {}", txt),
+        Err(error) => println!("Error reading!! => {}", error)
+    }   
+}
+```
+
+The return value of our **`read_from_file()`** function is of the type **`Result<String, io::Error>`**. Within the body of the function we check for the **`Result<T,E`** of other operations and if it is an **`Err`**, then we pass on/return that **`Err`** variant with its data as the result. If everything goes correctly we return the **`Ok`** variant with the value wrapped in it as the result.
+
+Finally the calling code in **`main`** checks for the **`Result<String, io::Error>`** with a pattern match and decides to print the result value or the error.
+
+##### Shortcut for Propagating Errors (the **`?`** operator)
+
+
+
+
+
